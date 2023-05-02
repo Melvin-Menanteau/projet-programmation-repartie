@@ -42,7 +42,7 @@ Met à jour les images des caractères des joueurs. Permet par exemple de créer
 
 Calcule les temps de course de chaque joueurs et affiche les résultat après un appui sur la touche `espace`
 
-## Partie 2 - comment sait-on à quelle étape du jeu on est ?
+## Partie 2 - Comment sait-on à quelle étape du jeu on est ?
 
 Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le State peux avoir pour valeur :
 
@@ -55,3 +55,7 @@ Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le Sta
  - **StateRun** : Course en cours
 
  - **StateResult** : Fin de course, affichage des résultats
+
+ ## Partie 3 - À quoi sert l’argument -tps lorsqu’on lance le jeu ?
+
+ **TPS** : Nombre d'appel à la fonction Update par seconde.
