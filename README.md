@@ -4,11 +4,11 @@ Bienvenue dans notre projet de programmation répartie en Go, l'objectif de ce p
 
 ## Schema du fonctionnement de la boucle update :
 
-![alt text](assets/DiagrammeUpdatefunction.png)
+![Diagramme fonction update](assets/DiagrammeUpdatefunction.png)
 
 # Guide
 
-## Partie 1 - À quoi servent les fonctions ?
+## Partie 1.1 - À quoi servent les fonctions ?
 
 #### HandleWelcomeScreen
 
@@ -42,7 +42,7 @@ Met à jour les images des caractères des joueurs. Permet par exemple de créer
 
 Calcule les temps de course de chaque joueurs et affiche les résultat après un appui sur la touche `espace`
 
-## Partie 2 - Comment sait-on à quelle étape du jeu on est ?
+## Partie 1.2 - Comment sait-on à quelle étape du jeu on est ?
 
 Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le State peux avoir pour valeur :
 
@@ -56,6 +56,12 @@ Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le Sta
 
  - **StateResult** : Fin de course, affichage des résultats
 
- ## Partie 3 - À quoi sert l’argument -tps lorsqu’on lance le jeu ?
+ ## Partie 1.3 - À quoi sert l’argument -tps lorsqu’on lance le jeu ?
 
  **TPS** : Nombre d'appel à la fonction Update par seconde.
+
+ ## Partie 2 - Fonctionnement du serveur
+
+![Diagramme sequence fonctionnement serveur](assets/DiagrammeSequenceFonctionnement.png)
+
+
