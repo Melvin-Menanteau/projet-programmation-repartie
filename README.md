@@ -6,11 +6,9 @@ Bienvenue dans notre projet de programmation répartie en Go, l'objectif de ce p
 
 ![alt text](assets/DiagrammeUpdatefunction.png)
 
-## Guide 1
+# Guide
 
-## 1
-
-### À quoi servent les fonctions ?
+## Partie 1 - À quoi servent les fonctions ?
 
 #### HandleWelcomeScreen
 
@@ -43,3 +41,17 @@ Met à jour les images des caractères des joueurs. Permet par exemple de créer
 #### HandleResults
 
 Calcule les temps de course de chaque joueurs et affiche les résultat après un appui sur la touche `espace`
+
+## Partie 2 - comment sait-on à quelle étape du jeu on est ?
+
+Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le State peux avoir pour valeur :
+
+ - **StateWelcomeScreen** : écran d'acceuil
+
+ - **StateChooseRunner** : écran choix de personnage
+
+ - **StateLaunchRun** : Décompte avant début de course
+
+ - **StateRun** : Course en cours
+
+ - **StateResult** : Fin de course, affichage des résultats
