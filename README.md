@@ -1,6 +1,6 @@
-# projet-programmation-repartie
+# Projet-programmation-repartie | IUT de Nantes 
 
-Bienvenue dans notre projet de programmation répartie en Go, l'objectif de ce projet est de rendre un jeux jouables a 4 joueurs en réseau.
+Bienvenue dans notre projet de programmation répartie en Go, l'objectif du projet est de permettre à quatre joueurs de jouer ensemble en réseau à un jeu de course qui était à l'origine destiné à être joué en local.
 
 ## Schema du fonctionnement de la boucle update :
 
