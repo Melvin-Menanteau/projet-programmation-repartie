@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 )
 
 func main() {
-
 	log.Println("Je me connecte")
 
-	conn, err := net.Dial("tcp", "172.18.48.1:8080")
+	conn, err := net.Dial("tcp", os.Args[1] + ":8080")
 	if err != nil {
 		log.Println("Dial error:", err)
 		return

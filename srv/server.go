@@ -1,11 +1,29 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"log"
 	"net"
 )
 
+// These constants define the five possible states of the game
+const (
+	StateWelcomeScreen int = iota // Title screen
+	StateChooseRunner             // Player selection screen
+	StateLaunchRun                // Countdown before a run
+	StateRun                      // Run
+	StateResult                   // Results announcement
+)
+
+type serverMessage struct {
+	message string
+	data int
+}
+
 func main() {
+	gameState := StateWelcomeScreen
+
 	clients := make([]net.Conn, 0)
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -33,7 +51,7 @@ func main() {
 
 		if err != nil {
 			log.Println("Erreur en envoyant des données au client")
-			return
+			// return
 		}
 
 		log.Println("Message envoyé au client: ", message)
@@ -42,12 +60,23 @@ func main() {
 		defer conn.Close()
 	}
 
+	var network bytes.Buffer
+	enc := gob.NewEncoder(&network)
+
 	for _, conn := range clients {
-		_, err = conn.Write([]byte("Le jeu va commencer"))
+		// _, err = conn.Write([]byte("Le jeu va commencer"))
+
+		encodingErr := enc.Encode(serverMessage{"gameState", gameState})
+
+		if encodingErr != nil {
+			log.Println("Erreur en encodant les données")
+		}
+
+		_, err = conn.Write(network.Bytes())
 
 		if err != nil {
 			log.Println("Erreur en envoyant des données au client")
-			return
+			// return
 		}
 
 		log.Println("Message envoyé au client: Le jeu va commencer")
