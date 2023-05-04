@@ -12,6 +12,7 @@ import (
 	"course/assets"
 	"image"
 	"log"
+	"net"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -25,6 +26,7 @@ type Game struct {
 	launchStep  int           // Current step in StateLaunchRun state
 	resultStep  int           // Current step in StateResult state
 	getTPS      bool          // Help for debug
+	serverConnection		*net.Conn
 }
 
 // These constants define the five possible states of the game
@@ -37,7 +39,13 @@ const (
 )
 
 // InitGame builds a new game ready for being run by ebiten
-func InitGame() (g Game) {
+func InitGame(serverConnection *net.Conn) (g Game) {
+
+	if g.serverConnection == nil {
+		log.Fatal("No server connection")
+	}
+
+	g.serverConnection = serverConnection
 
 	// Open the png image for the runners sprites
 	img, _, err := image.Decode(bytes.NewReader(assets.RunnerImage))

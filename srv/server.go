@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
+	// "bytes"
+	// "encoding/gob"
+	"encoding/json"
 	"log"
 	"net"
 )
@@ -17,8 +18,29 @@ const (
 )
 
 type serverMessage struct {
-	message string
-	data int
+	State int
+	Time int
+	Position float64
+	Character int
+}
+
+func listenClient(conn *net.Conn) {
+	buffer := make([]byte, 1024)
+	n, err := (*conn).Read(buffer)
+
+	if err != nil {
+		log.Println("Erreur en lisant les données")
+		return
+	}
+
+	var message serverMessage
+	err = json.Unmarshal(buffer[:n], &message)
+
+	if err != nil {
+		log.Println("Erreur en décodant les données")
+	}
+
+	log.Println("Message reçu du serveur: ", message)
 }
 
 func main() {
@@ -38,6 +60,8 @@ func main() {
 
 	for len(clients) < 2 {
 		conn, err := listener.Accept()
+
+		// go listenClient(&conn)
 
 		clients = append(clients, conn)
 
@@ -60,19 +84,27 @@ func main() {
 		defer conn.Close()
 	}
 
-	var network bytes.Buffer
-	enc := gob.NewEncoder(&network)
+	// var network bytes.Buffer
+	// enc := gob.NewEncoder(&network)
 
 	for _, conn := range clients {
-		// _, err = conn.Write([]byte("Le jeu va commencer"))
+		jsonData, err := json.Marshal(serverMessage{gameState, 0, 0, 0})
 
-		encodingErr := enc.Encode(serverMessage{"gameState", gameState})
-
-		if encodingErr != nil {
+		if err != nil {
 			log.Println("Erreur en encodant les données")
 		}
 
-		_, err = conn.Write(network.Bytes())
+		_, err = conn.Write(jsonData)
+
+		// _, err = conn.Write([]byte("Le jeu va commencer"))
+
+		// encodingErr := enc.Encode(serverMessage{"gameState", gameState})
+
+		// if encodingErr != nil {
+		// 	log.Println("Erreur en encodant les données")
+		// }
+
+		// _, err = conn.Write(network.Bytes())
 
 		if err != nil {
 			log.Println("Erreur en envoyant des données au client")

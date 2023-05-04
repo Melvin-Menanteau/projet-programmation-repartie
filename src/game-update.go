@@ -115,6 +115,8 @@ func (g *Game) Update() error {
 		done := g.HandleWelcomeScreen()
 		if done {
 			g.state++
+			// log.Println("Sending data to server")
+			// g.notifyServer();
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
@@ -142,4 +144,25 @@ func (g *Game) Update() error {
 		}
 	}
 	return nil
+}
+
+type serverMessage struct {
+	State int
+	Time int
+	Position float64
+	Character int
+}
+
+func (g *Game) notifyServer() {
+	// jsonData, err := json.Marshal(serverMessage{g.state, 0, 0, 0})
+
+	// if err != nil {
+	// 	log.Println("Erreur en encodant les données")
+	// }
+
+	// _, err = (*g.serverConnection).Write(jsonData)
+
+	// if err != nil {
+	// 	log.Println("Erreur en envoyant les données")
+	// }
 }
