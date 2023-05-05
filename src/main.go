@@ -58,6 +58,8 @@ func connectToServer() *net.Conn {
 func main() {
 	conn := connectToServer()
 
+	log.Println(conn);
+
 	defer (*conn).Close()
 
 	var getTPS bool
