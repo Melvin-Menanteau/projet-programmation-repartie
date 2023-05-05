@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 )
 
 // These constants define the five possible states of the game
@@ -24,23 +25,57 @@ type serverMessage struct {
 	Character int
 }
 
+type serverGameMessage struct {
+	state int
+	idPlayer string
+	xpos float64
+	ypos float64
+	arrived bool
+	runTime time.Duration
+	colorScheme int
+	colorSelected bool
+}
+
 func listenClient(conn *net.Conn) {
-	buffer := make([]byte, 1024)
-	n, err := (*conn).Read(buffer)
+	for {
+		buffer := make([]byte, 1024)
+		n, err := (*conn).Read(buffer)
 
-	if err != nil {
-		log.Println("Erreur en lisant les données")
-		return
+		if err != nil {
+			log.Println("Erreur en lisant les données")
+			continue
+		}
+
+		var message serverMessage
+		err = json.Unmarshal(buffer[:n], &message)
+
+		if err != nil {
+			log.Println("Erreur en décodant les données")
+			continue
+		}
+
+		log.Println("Message reçu du serveur: ", message)
+
+		log.Println("Notifier le client: ", message.State);
+
+		notifyClient(conn, &message.State);
 	}
+}
 
-	var message serverMessage
-	err = json.Unmarshal(buffer[:n], &message)
+func notifyClient(conn *net.Conn, gameState *int) {
+	for {
+		jsonData, err := json.Marshal(serverMessage{*gameState, 0, 0, 0})
 
-	if err != nil {
-		log.Println("Erreur en décodant les données")
+		if err != nil {
+			log.Println("Erreur en encodant les données")
+		}
+
+		_, err = (*conn).Write(jsonData)
+
+		if err != nil {
+			log.Println("Erreur en envoyant les données")
+		}
 	}
-
-	log.Println("Message reçu du serveur: ", message)
 }
 
 func main() {
@@ -70,31 +105,82 @@ func main() {
 			return
 		}
 
-		message := "Reponse du serveur"
-		_, err = conn.Write([]byte(message))
+		go listenClient(&conn)
+		go notifyClient(&conn, &gameState)
 
-		if err != nil {
-			log.Println("Erreur en envoyant des données au client")
-			// return
-		}
+		// message := "Reponse du serveur"
+		// _, err = conn.Write([]byte(message))
 
-		log.Println("Message envoyé au client: ", message)
+		// if err != nil {
+		// 	log.Println("Erreur en envoyant des données au client")
+		// 	// return
+		// }
 
-		// Fermer la connexion quand le programme se termine
-		defer conn.Close()
+		// log.Println("Message envoyé au client: ", message)
+
+		// jsonData, err := json.Marshal(serverMessage{gameState, 0, 0, 0})
+
+		// if err != nil {
+		// 	log.Println("Erreur en encodant les données")
+		// }
+
+		// _, err = conn.Write(jsonData)
+		
+
+
+		// /* Écouter le client */
+
+		// buffer := make([]byte, 1024)
+		// n, err := conn.Read(buffer)
+
+		// if err != nil {
+		// 	log.Println("Erreur en lisant les données du client")
+		// 	return
+		// }
+
+		// var serverMessage serverMessage
+		// err = json.Unmarshal(buffer[:n], &serverMessage)
+
+		// if err != nil {
+		// 	log.Println("Erreur en décodant les données")
+		// }
+
+		// log.Println("Message reçu du client: ", serverMessage)
+		// log.Println("Message reçu du client: ", serverMessage.State)
+
+		// // Fermer la connexion quand le programme se termine
+		// defer conn.Close()
 	}
 
 	// var network bytes.Buffer
 	// enc := gob.NewEncoder(&network)
 
-	for _, conn := range clients {
-		jsonData, err := json.Marshal(serverMessage{gameState, 0, 0, 0})
+	// for _, conn := range clients {
+	// 	jsonData, err := json.Marshal(serverMessage{gameState, 0, 0, 0})
 
-		if err != nil {
-			log.Println("Erreur en encodant les données")
-		}
+	// 	if err != nil {
+	// 		log.Println("Erreur en encodant les données")
+	// 	}
 
-		_, err = conn.Write(jsonData)
+	// 	_, err = conn.Write(jsonData)
+		
+	// 	buffer := make([]byte, 1024)
+	// 	n, err := conn.Read(buffer)
+
+	// 	if err != nil {
+	// 		log.Println("Erreur en lisant les données du client")
+	// 		return
+	// 	}
+
+	// 	var message serverMessage
+	// 	err = json.Unmarshal(buffer[:n], &message)
+
+	// 	if err != nil {
+	// 		log.Println("Erreur en décodant les données")
+	// 	}
+
+	// 	log.Println("Message reçu du client: ", message)
+	// 	log.Println("Message reçu du client: ", message.State)
 
 		// _, err = conn.Write([]byte("Le jeu va commencer"))
 
@@ -106,11 +192,15 @@ func main() {
 
 		// _, err = conn.Write(network.Bytes())
 
-		if err != nil {
-			log.Println("Erreur en envoyant des données au client")
-			// return
-		}
+	// 	if err != nil {
+	// 		log.Println("Erreur en envoyant des données au client")
+	// 		// return
+	// 	}
 
-		log.Println("Message envoyé au client: Le jeu va commencer")
+	// 	log.Println("Message envoyé au client: Le jeu va commencer")
+	// }
+
+	for client := range clients {
+		defer clients[client].Close()
 	}
 }

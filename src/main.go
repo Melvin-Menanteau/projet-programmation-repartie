@@ -29,8 +29,6 @@ func connectToServer() *net.Conn {
 		return nil
 	}
 
-	return &conn
-
 	// for {
 	// 	buffer := make([]byte, 1024)
 	// 	n, err := conn.Read(buffer)
@@ -53,12 +51,13 @@ func connectToServer() *net.Conn {
 	// 	// Afficher la réponse du serveur
 	// 	log.Println("Réponse du serveur:", string(buffer[:n]))
 	// }
+
+	return &conn
+
 }
 
 func main() {
 	conn := connectToServer()
-
-	log.Println(conn);
 
 	defer (*conn).Close()
 

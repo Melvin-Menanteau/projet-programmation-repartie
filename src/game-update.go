@@ -16,6 +16,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -114,9 +116,9 @@ func (g *Game) Update() error {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
 		if done {
-			g.state++
-			// log.Println("Sending data to server")
-			// g.notifyServer();
+		// 	g.state++
+			log.Println("Sending data to server")
+			g.notifyServer();
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
@@ -154,15 +156,37 @@ type serverMessage struct {
 }
 
 func (g *Game) notifyServer() {
-	// jsonData, err := json.Marshal(serverMessage{g.state, 0, 0, 0})
+	jsonData, err := json.Marshal(serverMessage{g.state, 0, 0, 0})
 
-	// if err != nil {
-	// 	log.Println("Erreur en encodant les données")
-	// }
+	if err != nil {
+		log.Println("Erreur en encodant les données")
+	}
 
-	// _, err = (*g.serverConnection).Write(jsonData)
+	_, err = (*g.serverConnection).Write(jsonData)
 
-	// if err != nil {
-	// 	log.Println("Erreur en envoyant les données")
-	// }
+	if err != nil {
+		log.Println("Erreur en envoyant les données")
+	}
+}
+
+func (g *Game) listenServer() {
+	for {
+		buffer := make([]byte, 1024)
+		n, err := (*g.serverConnection).Read(buffer)
+
+		if err != nil {
+			log.Println("Erreur en lisant les données du client")
+			continue
+		}
+
+		var serverMessage serverMessage
+		err = json.Unmarshal(buffer[:n], &serverMessage)
+
+		if err != nil {
+			log.Println("Erreur en décodant les données")
+			continue
+		}
+
+		log.Println("Message reçu du serveur: ", serverMessage)
+	}
 }

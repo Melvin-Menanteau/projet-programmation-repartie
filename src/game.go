@@ -41,11 +41,13 @@ const (
 // InitGame builds a new game ready for being run by ebiten
 func InitGame(serverConnection *net.Conn) (g Game) {
 
-	if g.serverConnection == nil {
+	if serverConnection == nil {
 		log.Fatal("No server connection")
 	}
 
 	g.serverConnection = serverConnection
+
+	go g.listenServer()
 
 	// Open the png image for the runners sprites
 	img, _, err := image.Decode(bytes.NewReader(assets.RunnerImage))
