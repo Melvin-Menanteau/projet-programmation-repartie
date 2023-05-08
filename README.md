@@ -1,8 +1,26 @@
 # Projet-programmation-repartie | IUT de Nantes 
 
-Bienvenue dans notre projet de programmation répartie en Go, l'objectif du projet est de permettre à quatre joueurs de jouer ensemble en réseau à un jeu de course qui était à l'origine destiné à être joué en local.
+Bienvenue dans notre projet de programmation répartie en Go.
+L'objectif du projet est de permettre à quatre joueurs de jouer ensemble en réseau à un jeu de course qui était à l'origine destiné à être joué en local.
 
-## Schema du fonctionnement de la boucle update :
+### Exemple de Vue du jeu : 
+
+![Exemple du jeu](assets/exempleJeu.png)
+
+## Installation
+*Build le projet avec la commande suivante :*
+
+`go build`
+
+*Coté serveur (lancement):*
+
+`TODO`
+
+*Coté client (lancement):*
+
+`TODO`
+
+## Schema du fonctionnement du jeu (boucle update) :
 
 ![Diagramme fonction update](assets/DiagrammeUpdatefunction.png)
 
@@ -65,3 +83,6 @@ Pour savoir a qu'elles étapes le jeux est rendu on se réfère au State, le Sta
 ![Diagramme sequence fonctionnement serveur](assets/DiagrammeSequenceFonctionnement.png)
 
 
+## Credits
+ * **Auger-Dubois Benoit**
+ * **Menanteau Melvin**

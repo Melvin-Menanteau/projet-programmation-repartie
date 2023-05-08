@@ -3,6 +3,7 @@ package main
 import (
 	// "bytes"
 	// "encoding/gob"
+	"encoding/binary"
 	"encoding/json"
 	"log"
 	"net"
@@ -19,20 +20,20 @@ const (
 )
 
 type serverMessage struct {
-	State int
-	Time int
-	Position float64
+	State     int
+	Time      int
+	Position  float64
 	Character int
 }
 
 type serverGameMessage struct {
-	state int
-	idPlayer string
-	xpos float64
-	ypos float64
-	arrived bool
-	runTime time.Duration
-	colorScheme int
+	state         int
+	idPlayer      string
+	xpos          float64
+	ypos          float64
+	arrived       bool
+	runTime       time.Duration
+	colorScheme   int
 	colorSelected bool
 }
 
@@ -56,9 +57,9 @@ func listenClient(conn *net.Conn) {
 
 		log.Println("Message reçu du serveur: ", message)
 
-		log.Println("Notifier le client: ", message.State);
+		log.Println("Notifier le client: ", message.State)
 
-		notifyClient(conn, &message.State);
+		notifyClient(conn, &message.State)
 	}
 }
 
@@ -78,6 +79,19 @@ func notifyClient(conn *net.Conn, gameState *int) {
 	}
 }
 
+// Envoie l'état du jeu au client
+func notifyClientGameState(conn *net.Conn, gameState *int) {
+	// Conversion de l'entier représentant l'état du jeu en un slice de bytes
+	stateBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(stateBytes, uint32(*gameState))
+
+	// Envoi du slice de bytes sur la connexion
+	_, err := (*conn).Write(stateBytes)
+	if err != nil {
+		log.Println("Erreur en envoyant l'état du jeu au client:", err)
+	}
+}
+
 func main() {
 	gameState := StateWelcomeScreen
 
@@ -93,10 +107,8 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 2 {
+	for len(clients) < 4 {
 		conn, err := listener.Accept()
-
-		// go listenClient(&conn)
 
 		clients = append(clients, conn)
 
@@ -125,8 +137,6 @@ func main() {
 		// }
 
 		// _, err = conn.Write(jsonData)
-		
-
 
 		// /* Écouter le client */
 
@@ -152,6 +162,16 @@ func main() {
 		// defer conn.Close()
 	}
 
+	for gameState == StateWelcomeScreen {
+
+		// recoit les messages des clients si ils sont prêts
+
+		for _, conn := range clients {
+			notifyClientGameState(&conn, &gameState)
+		}
+		time.Sleep(1 * time.Second)
+	}
+
 	// var network bytes.Buffer
 	// enc := gob.NewEncoder(&network)
 
@@ -163,7 +183,7 @@ func main() {
 	// 	}
 
 	// 	_, err = conn.Write(jsonData)
-		
+
 	// 	buffer := make([]byte, 1024)
 	// 	n, err := conn.Read(buffer)
 
@@ -182,15 +202,15 @@ func main() {
 	// 	log.Println("Message reçu du client: ", message)
 	// 	log.Println("Message reçu du client: ", message.State)
 
-		// _, err = conn.Write([]byte("Le jeu va commencer"))
+	// _, err = conn.Write([]byte("Le jeu va commencer"))
 
-		// encodingErr := enc.Encode(serverMessage{"gameState", gameState})
+	// encodingErr := enc.Encode(serverMessage{"gameState", gameState})
 
-		// if encodingErr != nil {
-		// 	log.Println("Erreur en encodant les données")
-		// }
+	// if encodingErr != nil {
+	// 	log.Println("Erreur en encodant les données")
+	// }
 
-		// _, err = conn.Write(network.Bytes())
+	// _, err = conn.Write(network.Bytes())
 
 	// 	if err != nil {
 	// 		log.Println("Erreur en envoyant des données au client")

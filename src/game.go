@@ -19,14 +19,14 @@ import (
 )
 
 type Game struct {
-	state       int           // Current state of the game
-	runnerImage *ebiten.Image // Image with all the sprites of the runners
-	runners     [4]Runner     // The four runners used in the game
-	f           Field         // The running field
-	launchStep  int           // Current step in StateLaunchRun state
-	resultStep  int           // Current step in StateResult state
-	getTPS      bool          // Help for debug
-	serverConnection		*net.Conn
+	state            int           // Current state of the game
+	runnerImage      *ebiten.Image // Image with all the sprites of the runners
+	runners          [4]Runner     // The four runners used in the game
+	f                Field         // The running field
+	launchStep       int           // Current step in StateLaunchRun state
+	resultStep       int           // Current step in StateResult state
+	getTPS           bool          // Help for debug
+	serverConnection *net.Conn
 }
 
 // These constants define the five possible states of the game
@@ -71,6 +71,7 @@ func InitGame(serverConnection *net.Conn) (g Game) {
 			xpos: start, ypos: 50 + float64(i*20),
 			maxFrameInterval: interval,
 			colorScheme:      0,
+			idRunner:         i,
 		}
 	}
 
