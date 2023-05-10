@@ -8,17 +8,17 @@ L'objectif du projet est de permettre à quatre joueurs de jouer ensemble en ré
 ![Exemple du jeu](assets/exempleJeu.png)
 
 ## Installation
-*Build le projet avec la commande suivante :*
-
-`go build`
 
 *Coté serveur (lancement):*
 
-`TODO`
+Se placer dans dans le dossier `srv`
+
+`go run ./server.go`
 
 *Coté client (lancement):*
 
-`TODO`
+`go build` <br/>
+`./course <ip-address>`
 
 ## Schema du fonctionnement du jeu (boucle update) :
 
