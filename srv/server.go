@@ -42,6 +42,10 @@ func listenClient(conn *net.Conn) {
 		buffer := make([]byte, 1024)
 		n, err := (*conn).Read(buffer)
 
+		if n == 0 {
+			continue
+		}
+
 		if err != nil {
 			log.Println("Erreur en lisant les données")
 			continue
@@ -51,31 +55,28 @@ func listenClient(conn *net.Conn) {
 		err = json.Unmarshal(buffer[:n], &message)
 
 		if err != nil {
-			log.Println("Erreur en décodant les données")
 			continue
 		}
 
-		log.Println("Message reçu du serveur: ", message)
+		log.Println("Message reçu du client: ", message)
 
 		log.Println("Notifier le client: ", message.State)
 
-		notifyClient(conn, &message.State)
+		// notifyClient(conn, &message.State)
 	}
 }
 
 func notifyClient(conn *net.Conn, gameState *int) {
-	for {
-		jsonData, err := json.Marshal(serverMessage{*gameState, 0, 0, 0})
+	jsonData, err := json.Marshal(serverMessage{*gameState, 0, 0, 0})
 
-		if err != nil {
-			log.Println("Erreur en encodant les données")
-		}
+	if err != nil {
+		log.Println("Erreur en encodant les données")
+	}
 
-		_, err = (*conn).Write(jsonData)
+	_, err = (*conn).Write(jsonData)
 
-		if err != nil {
-			log.Println("Erreur en envoyant les données")
-		}
+	if err != nil {
+		log.Println("Erreur en envoyant les données")
 	}
 }
 
@@ -107,7 +108,7 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 4 {
+	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
 		clients = append(clients, conn)
@@ -118,59 +119,32 @@ func main() {
 		}
 
 		go listenClient(&conn)
-		go notifyClient(&conn, &gameState)
-
-		// message := "Reponse du serveur"
-		// _, err = conn.Write([]byte(message))
-
-		// if err != nil {
-		// 	log.Println("Erreur en envoyant des données au client")
-		// 	// return
-		// }
-
-		// log.Println("Message envoyé au client: ", message)
-
-		// jsonData, err := json.Marshal(serverMessage{gameState, 0, 0, 0})
-
-		// if err != nil {
-		// 	log.Println("Erreur en encodant les données")
-		// }
-
-		// _, err = conn.Write(jsonData)
-
-		// /* Écouter le client */
-
-		// buffer := make([]byte, 1024)
-		// n, err := conn.Read(buffer)
-
-		// if err != nil {
-		// 	log.Println("Erreur en lisant les données du client")
-		// 	return
-		// }
-
-		// var serverMessage serverMessage
-		// err = json.Unmarshal(buffer[:n], &serverMessage)
-
-		// if err != nil {
-		// 	log.Println("Erreur en décodant les données")
-		// }
-
-		// log.Println("Message reçu du client: ", serverMessage)
-		// log.Println("Message reçu du client: ", serverMessage.State)
-
-		// // Fermer la connexion quand le programme se termine
-		// defer conn.Close()
+		// go notifyClient(&conn, &gameState)
 	}
 
-	for gameState == StateWelcomeScreen {
+	log.Println("Tous les clients sont connectés")
 
-		// recoit les messages des clients si ils sont prêts
+	gameState++
 
-		for _, conn := range clients {
-			notifyClientGameState(&conn, &gameState)
-		}
+	log.Println("Notifier les clients: ", gameState)
+
+	for _, conn := range clients {
+		notifyClient(&conn, &gameState)
+	}
+
+	for {
 		time.Sleep(1 * time.Second)
 	}
+
+	// for gameState == StateWelcomeScreen {
+
+	// 	// recoit les messages des clients si ils sont prêts
+
+	// 	for _, conn := range clients {
+	// 		notifyClientGameState(&conn, &gameState)
+	// 	}
+	// 	time.Sleep(1 * time.Second)
+	// }
 
 	// var network bytes.Buffer
 	// enc := gob.NewEncoder(&network)

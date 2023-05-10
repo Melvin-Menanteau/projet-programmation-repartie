@@ -47,6 +47,7 @@ func InitGame(serverConnection *net.Conn) (g Game) {
 
 	g.serverConnection = serverConnection
 
+	go g.notifyServer()
 	go g.listenServer()
 
 	// Open the png image for the runners sprites

@@ -27,7 +27,7 @@ import (
 // HandleWelcomeScreen waits for the player to push SPACE in order to
 // start the game
 func (g *Game) HandleWelcomeScreen() bool {
-	return g.runners[0].client.globalState == GlobalChooseRunner && inpututil.IsKeyJustPressed(ebiten.KeySpace)
+	return inpututil.IsKeyJustPressed(ebiten.KeySpace)
 }
 
 // ChooseRunners loops over all the runners to check which sprite each
@@ -112,8 +112,7 @@ func (g *Game) HandleResults() bool {
 // Depending of the current state of the game it calls the above utilitary
 // function and then it may update the state of the game
 func (g *Game) Update() error {
-	// mais a jours l'état du jeu
-	g.listenServer()
+	// g.listenServer()
 	switch g.state {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
@@ -174,6 +173,10 @@ func (g *Game) listenServer() {
 		buffer := make([]byte, 1024)
 		n, err := (*g.serverConnection).Read(buffer)
 
+		if n == 0 {
+			continue
+		}
+
 		if err != nil {
 			log.Println("Erreur en lisant les données du server")
 			continue
@@ -183,9 +186,18 @@ func (g *Game) listenServer() {
 		err = json.Unmarshal(buffer[:n], &serverMessage)
 
 		if err != nil {
-			log.Println("Erreur en décodant les données")
+			// log.Println("Erreur en décodant les données")
 			continue
 		}
+
+		log.Println(g.state, serverMessage.State)
+
+		if g.state != serverMessage.State {
+			log.Println("Changement d'état")
+			g.state = serverMessage.State
+		}
+
+		log.Println(g.state)
 
 		log.Println("Message reçu du serveur: ", serverMessage)
 	}
