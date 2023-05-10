@@ -8,7 +8,6 @@ import (
 
 type Client struct {
 	conn        net.Conn
-	idClient    string
 	runner      Runner
 	globalState int
 }
@@ -31,7 +30,6 @@ func (c *Client) connect(address string) error {
 		return err
 	}
 	c.conn = conn
-	c.idClient = "player" + string(c.runner.idRunner)
 	return nil
 }
 

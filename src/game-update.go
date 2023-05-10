@@ -112,36 +112,36 @@ func (g *Game) HandleResults() bool {
 // Depending of the current state of the game it calls the above utilitary
 // function and then it may update the state of the game
 func (g *Game) Update() error {
-	// g.listenServer()
+	log.Println("Iteration de l'update, etat : ", g.state, " ,pointeur : ", &g.state)
 	switch g.state {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
 		if done {
-			g.state++
+			g.SetState(g.state + 1)
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
 		if done {
 			g.UpdateAnimation()
-			g.state++
+			g.SetState(g.state + 1)
 		}
 	case StateLaunchRun:
 		done := g.HandleLaunchRun()
 		if done {
-			g.state++
+			g.SetState(g.state + 1)
 		}
 	case StateRun:
 		g.UpdateRunners()
 		finished := g.CheckArrival()
 		g.UpdateAnimation()
 		if finished {
-			g.state++
+			g.SetState(g.state + 1)
 		}
 	case StateResult:
 		done := g.HandleResults()
 		if done {
 			g.Reset()
-			g.state = StateLaunchRun
+			g.SetState(StateLaunchRun)
 		}
 	}
 	return nil
@@ -185,20 +185,22 @@ func (g *Game) listenServer() {
 		var serverMessage serverMessage
 		err = json.Unmarshal(buffer[:n], &serverMessage)
 
+		log.Println("Message reçu du serveur: ", serverMessage)
+
 		if err != nil {
 			// log.Println("Erreur en décodant les données")
 			continue
 		}
 
-		log.Println(g.state, serverMessage.State)
+		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
 		if g.state != serverMessage.State {
-			log.Println("Changement d'état")
-			g.state = serverMessage.State
+			log.Println("Changement d'état : ", serverMessage.State)
+			g.SetState(serverMessage.State)
 		}
 
-		log.Println(g.state)
+		log.Println("Nouveau état : ", g.state, " ,poiteur : ", &g.state)
 
-		log.Println("Message reçu du serveur: ", serverMessage)
 	}
+
 }

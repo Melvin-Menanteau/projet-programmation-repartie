@@ -13,6 +13,7 @@ import (
 	"image"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,6 +21,7 @@ import (
 
 type Game struct {
 	state            int           // Current state of the game
+	stateLock        sync.Mutex    // Lock for the state
 	runnerImage      *ebiten.Image // Image with all the sprites of the runners
 	runners          [4]Runner     // The four runners used in the game
 	f                Field         // The running field
@@ -37,6 +39,14 @@ const (
 	StateRun                      // Run
 	StateResult                   // Results announcement
 )
+
+// setter synchronisé pour l'état du jeu
+func (g *Game) SetState(state int) {
+	g.stateLock.Lock()         // acquisition du verrou
+	defer g.stateLock.Unlock() // libération du verrou après la fin de la méthode
+
+	g.state = state
+}
 
 // InitGame builds a new game ready for being run by ebiten
 func InitGame(serverConnection *net.Conn) (g Game) {
