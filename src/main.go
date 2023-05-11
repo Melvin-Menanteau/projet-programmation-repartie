@@ -23,7 +23,7 @@ const (
 func connectToServer() *net.Conn {
 	log.Println("Je me connecte")
 
-	conn, err := net.Dial("tcp", os.Args[1] + ":8080")
+	conn, err := net.Dial("tcp", os.Args[1]+":8080")
 	if err != nil {
 		log.Println("Dial error:", err)
 		return nil
@@ -71,7 +71,7 @@ func main() {
 	g := InitGame(conn)
 	g.getTPS = getTPS
 
-	err := ebiten.RunGame(&g)
+	err := ebiten.RunGame(g)
 	log.Print(err)
 
 }

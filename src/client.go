@@ -42,4 +42,36 @@ func (c *Client) sendMessage(message string) {
 	} else {
 		writer.Flush()
 	}
+
+
+func (client *Client) listen(){
+	buffer := make([]byte, 1024)
+	n, err := (*g.serverConnection).Read(buffer)
+
+	if n == 0 {
+		continue
+	}
+
+	if err != nil {
+		log.Println("Erreur en lisant les données du server")
+		continue
+	}
+
+	var serverMessage serverMessage
+	err = json.Unmarshal(buffer[:n], &serverMessage)
+
+	log.Println("Message reçu du serveur: ", serverMessage)
+
+	if err != nil {
+		// log.Println("Erreur en décodant les données")
+		continue
+	}
+
+	log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
+
+	if serverMessage.State == StateChooseRunner {
+		log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
+		client.globalState = GlobalChooseRunner
+	}
+}
 }

@@ -27,7 +27,7 @@ import (
 // HandleWelcomeScreen waits for the player to push SPACE in order to
 // start the game
 func (g *Game) HandleWelcomeScreen() bool {
-	return inpututil.IsKeyJustPressed(ebiten.KeySpace)
+	return g.runners[0].client.globalState == GlobalChooseRunner && inpututil.IsKeyJustPressed(ebiten.KeySpace)
 }
 
 // ChooseRunners loops over all the runners to check which sprite each
@@ -112,7 +112,6 @@ func (g *Game) HandleResults() bool {
 // Depending of the current state of the game it calls the above utilitary
 // function and then it may update the state of the game
 func (g *Game) Update() error {
-	log.Println("Iteration de l'update, etat : ", g.state, " ,pointeur : ", &g.state)
 	switch g.state {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
@@ -194,12 +193,10 @@ func (g *Game) listenServer() {
 
 		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
-		if g.state != serverMessage.State {
-			log.Println("Changement d'état : ", serverMessage.State)
-			g.SetState(serverMessage.State)
+		if serverMessage.State == StateChooseRunner {
+			log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
+			g.runners[1].client.globalState = GlobalChooseRunner
 		}
-
-		log.Println("Nouveau état : ", g.state, " ,poiteur : ", &g.state)
 
 	}
 

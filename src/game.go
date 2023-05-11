@@ -29,6 +29,7 @@ type Game struct {
 	resultStep       int           // Current step in StateResult state
 	getTPS           bool          // Help for debug
 	serverConnection *net.Conn
+	isServerReady    bool // Show if the server is ready to change game state
 }
 
 // These constants define the five possible states of the game
@@ -49,12 +50,13 @@ func (g *Game) SetState(state int) {
 }
 
 // InitGame builds a new game ready for being run by ebiten
-func InitGame(serverConnection *net.Conn) (g Game) {
+func InitGame(serverConnection *net.Conn) *Game {
 
 	if serverConnection == nil {
 		log.Fatal("No server connection")
 	}
 
+	g := &Game{}
 	g.serverConnection = serverConnection
 
 	go g.notifyServer()
@@ -82,7 +84,6 @@ func InitGame(serverConnection *net.Conn) (g Game) {
 			xpos: start, ypos: 50 + float64(i*20),
 			maxFrameInterval: interval,
 			colorScheme:      0,
-			idRunner:         i,
 		}
 	}
 
@@ -92,6 +93,9 @@ func InitGame(serverConnection *net.Conn) (g Game) {
 		xarrival: finish,
 		chrono:   time.Now(),
 	}
+
+	// At the creation the server is not ready to change game state, he waits for clients to connect.
+	g.isServerReady = false
 
 	return g
 }

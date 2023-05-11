@@ -40,7 +40,6 @@ type Runner struct {
 	colorSelected     bool          // Tells if the color scheme is fixed or not
 	animationStep     int           // Current step of the runner animation
 	animationFrame    int           // Number of frames since the last animation step
-	idRunner          int           // Number of the runner (1 to 4)
 	client            *Client       // Client associated with the runner
 }
 
