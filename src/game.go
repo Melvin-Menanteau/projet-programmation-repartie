@@ -29,7 +29,7 @@ type Game struct {
 	resultStep       int           // Current step in StateResult state
 	getTPS           bool          // Help for debug
 	serverConnection *net.Conn
-	isServerReady    bool // Show if the server is ready to change game state
+	client           *Client // Client associated with the runner
 }
 
 // These constants define the five possible states of the game
@@ -93,9 +93,6 @@ func InitGame(serverConnection *net.Conn) *Game {
 		xarrival: finish,
 		chrono:   time.Now(),
 	}
-
-	// At the creation the server is not ready to change game state, he waits for clients to connect.
-	g.isServerReady = false
 
 	return g
 }

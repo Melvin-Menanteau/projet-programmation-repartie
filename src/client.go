@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"net"
 )
@@ -42,19 +43,14 @@ func (c *Client) sendMessage(message string) {
 	} else {
 		writer.Flush()
 	}
+}
 
-
-func (client *Client) listen(){
+func (g *Game) listen() {
 	buffer := make([]byte, 1024)
 	n, err := (*g.serverConnection).Read(buffer)
 
-	if n == 0 {
-		continue
-	}
-
 	if err != nil {
 		log.Println("Erreur en lisant les données du server")
-		continue
 	}
 
 	var serverMessage serverMessage
@@ -63,15 +59,13 @@ func (client *Client) listen(){
 	log.Println("Message reçu du serveur: ", serverMessage)
 
 	if err != nil {
-		// log.Println("Erreur en décodant les données")
-		continue
+		log.Println("Erreur en décodant les données")
 	}
 
 	log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
 	if serverMessage.State == StateChooseRunner {
 		log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
-		client.globalState = GlobalChooseRunner
+		g.client.globalState = GlobalChooseRunner
 	}
-}
 }
