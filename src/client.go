@@ -89,7 +89,7 @@ func (g *Game) listenServer() {
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, "", 0, 0, false, 0, 0, false})
+	jsonData, err := json.Marshal(serverGameMessage{g.state, "aaaaa", 0, 0, false, 0, 0, false})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")
