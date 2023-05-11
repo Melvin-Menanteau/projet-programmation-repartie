@@ -12,13 +12,13 @@ L'objectif du projet est de permettre à quatre joueurs de jouer ensemble en ré
 
 `go build`
 
-*Coté serveur (lancement):*
+*Coté serveur (lancement dans le fichier srv/):*
 
-`TODO`
+`go run server.go`
 
 *Coté client (lancement):*
 
-`TODO`
+`./course *VotreIP*`
 
 ## Schema du fonctionnement du jeu (boucle update) :
 
