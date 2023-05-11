@@ -8,6 +8,7 @@ import (
 )
 
 type Client struct {
+	idPlayer    string
 	conn        net.Conn
 	runner      Runner
 	globalState int
@@ -65,6 +66,11 @@ func (g *Game) listenServer() {
 
 		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
+		if g.client.idPlayer != serverMessage.IdPlayer {
+			log.Println("Changement du nom à", serverMessage.IdPlayer)
+			g.client.idPlayer = serverMessage.IdPlayer
+		}
+
 		switch serverMessage.State {
 		case StateChooseRunner:
 			g.client.globalState = GlobalChooseRunner
@@ -77,7 +83,7 @@ func (g *Game) listenServer() {
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, "aaaa", 0, 0, false, 0, 0, false})
+	jsonData, err := json.Marshal(serverGameMessage{g.state, "", 0, 0, false, 0, 0, false})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

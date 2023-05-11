@@ -101,7 +101,7 @@ func main() {
 			return
 		}
 
-		// notifyClient(&clients[len(clients)-1], &gameState)
+		notifyClient(&clients[len(clients)-1], &gameState)
 		go listenClient(&conn)
 	}
 
