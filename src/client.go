@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"log"
 	"net"
@@ -15,14 +14,14 @@ type Client struct {
 }
 
 type serverGameMessage struct {
-	state         int
-	idPlayer      string
-	xpos          float64
-	ypos          float64
-	arrived       bool
-	runTime       time.Duration
-	colorScheme   int
-	colorSelected bool
+	State         int
+	IdPlayer      string
+	Xpos          float64
+	Ypos          float64
+	Arrived       bool
+	RunTime       time.Duration
+	ColorScheme   int
+	ColorSelected bool
 }
 
 const (
@@ -46,20 +45,9 @@ func (c *Client) connect(address string) error {
 	return nil
 }
 
-func (c *Client) sendMessage(message string) {
-	// send message to server using bufio writer
-	writer := bufio.NewWriter(c.conn)
-	_, err := writer.WriteString(message + "\n")
-	if err != nil {
-		log.Printf("Error sending message to server: %v", err)
-	} else {
-		writer.Flush()
-	}
-}
-
 func (g *Game) listenServer() {
 	for {
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 4096)
 		n, err := (*g.serverConnection).Read(buffer)
 
 		if err != nil {
@@ -75,9 +63,9 @@ func (g *Game) listenServer() {
 			log.Println("Erreur en décodant les données")
 		}
 
-		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.state)
+		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
-		switch serverMessage.state {
+		switch serverMessage.State {
 		case StateChooseRunner:
 			g.client.globalState = GlobalChooseRunner
 			break
@@ -89,7 +77,7 @@ func (g *Game) listenServer() {
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, "aaaaa", 0, 0, false, 0, 0, false})
+	jsonData, err := json.Marshal(serverGameMessage{g.state, "aaaa", 0, 0, false, 0, 0, false})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

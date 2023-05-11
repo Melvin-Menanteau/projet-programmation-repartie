@@ -51,15 +51,13 @@ func (g *Game) SetState(state int) {
 
 // InitGame builds a new game ready for being run by ebiten
 func InitGame(serverConnection *net.Conn) *Game {
-
 	if serverConnection == nil {
 		log.Fatal("No server connection")
 	}
 
 	g := &Game{}
-	g.serverConnection = serverConnection
-
 	g.client = NewClient()
+	g.serverConnection = serverConnection
 
 	// go g.notifyServer()
 	go g.listenServer()
