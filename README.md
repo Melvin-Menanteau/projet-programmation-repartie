@@ -16,7 +16,7 @@ L'objectif du projet est de permettre à quatre joueurs de jouer ensemble en ré
 
 `go run server.go`
 
-*Coté client (lancement):*
+*Coté client (lancement dans le fichier src/):*
 
 `./course *VotreIP*`
 
