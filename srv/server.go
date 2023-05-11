@@ -51,7 +51,7 @@ func listenClient(conn *net.Conn) {
 			continue
 		}
 
-		var message serverMessage
+		var message serverGameMessage
 		err = json.Unmarshal(buffer[:n], &message)
 
 		if err != nil {
@@ -60,14 +60,14 @@ func listenClient(conn *net.Conn) {
 
 		log.Println("Message reçu du client: ", message)
 
-		log.Println("Notifier le client: ", message.State)
+		log.Println("Notifier le client: ", message.state)
 
 		// notifyClient(conn, &message.State)
 	}
 }
 
 func notifyClient(conn *net.Conn, gameState *int) {
-	jsonData, err := json.Marshal(serverMessage{*gameState, 0, 0, 0})
+	jsonData, err := json.Marshal(serverGameMessage{*gameState, "", 0, 0, false, 0, 0, false})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

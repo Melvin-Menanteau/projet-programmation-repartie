@@ -5,12 +5,24 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 )
 
 type Client struct {
 	conn        net.Conn
 	runner      Runner
 	globalState int
+}
+
+type serverGameMessage struct {
+	state         int
+	idPlayer      string
+	xpos          float64
+	ypos          float64
+	arrived       bool
+	runTime       time.Duration
+	colorScheme   int
+	colorSelected bool
 }
 
 const (
@@ -54,7 +66,7 @@ func (g *Game) listenServer() {
 			log.Println("Erreur en lisant les données du server")
 		}
 
-		var serverMessage serverMessage
+		var serverMessage serverGameMessage
 		err = json.Unmarshal(buffer[:n], &serverMessage)
 
 		log.Println("Message reçu du serveur: ", serverMessage)
@@ -63,13 +75,29 @@ func (g *Game) listenServer() {
 			log.Println("Erreur en décodant les données")
 		}
 
-		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
+		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.state)
 
-		if serverMessage.State == StateChooseRunner {
-			log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
+		switch serverMessage.state {
+		case StateChooseRunner:
 			g.client.globalState = GlobalChooseRunner
+			break
+		case StateLaunchRun:
+			g.client.globalState = GlobalLaunchRun
+			break
 		}
+	}
+}
 
-		log.Println("SDflikjhsdafliphsflpsadf")
+func (g *Game) notifyServer() {
+	jsonData, err := json.Marshal(serverGameMessage{g.state, "", 0, 0, false, 0, 0, false})
+
+	if err != nil {
+		log.Println("Erreur en encodant les données")
+	}
+
+	_, err = (*g.serverConnection).Write(jsonData)
+
+	if err != nil {
+		log.Println("Erreur en envoyant les données")
 	}
 }
