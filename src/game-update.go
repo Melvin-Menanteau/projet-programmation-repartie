@@ -27,7 +27,7 @@ import (
 // HandleWelcomeScreen waits for the player to push SPACE in order to
 // start the game
 func (g *Game) HandleWelcomeScreen() bool {
-	return g.runners[0].client.globalState == GlobalChooseRunner && inpututil.IsKeyJustPressed(ebiten.KeySpace)
+	return g.client.globalState == GlobalChooseRunner && inpututil.IsKeyJustPressed(ebiten.KeySpace)
 }
 
 // ChooseRunners loops over all the runners to check which sprite each
@@ -116,31 +116,31 @@ func (g *Game) Update() error {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
 		if done {
-			g.SetState(g.state + 1)
+			g.state++
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
 		if done {
 			g.UpdateAnimation()
-			g.SetState(g.state + 1)
+			g.state++
 		}
 	case StateLaunchRun:
 		done := g.HandleLaunchRun()
 		if done {
-			g.SetState(g.state + 1)
+			g.state++
 		}
 	case StateRun:
 		g.UpdateRunners()
 		finished := g.CheckArrival()
 		g.UpdateAnimation()
 		if finished {
-			g.SetState(g.state + 1)
+			g.state++
 		}
 	case StateResult:
 		done := g.HandleResults()
 		if done {
 			g.Reset()
-			g.SetState(StateLaunchRun)
+			g.state = StateLaunchRun
 		}
 	}
 	return nil
@@ -165,39 +165,4 @@ func (g *Game) notifyServer() {
 	if err != nil {
 		log.Println("Erreur en envoyant les données")
 	}
-}
-
-func (g *Game) listenServer() {
-	for {
-		buffer := make([]byte, 1024)
-		n, err := (*g.serverConnection).Read(buffer)
-
-		if n == 0 {
-			continue
-		}
-
-		if err != nil {
-			log.Println("Erreur en lisant les données du server")
-			continue
-		}
-
-		var serverMessage serverMessage
-		err = json.Unmarshal(buffer[:n], &serverMessage)
-
-		log.Println("Message reçu du serveur: ", serverMessage)
-
-		if err != nil {
-			// log.Println("Erreur en décodant les données")
-			continue
-		}
-
-		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
-
-		if serverMessage.State == StateChooseRunner {
-			log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
-			g.runners[1].client.globalState = GlobalChooseRunner
-		}
-
-	}
-
 }

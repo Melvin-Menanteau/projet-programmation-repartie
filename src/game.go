@@ -59,6 +59,8 @@ func InitGame(serverConnection *net.Conn) *Game {
 	g := &Game{}
 	g.serverConnection = serverConnection
 
+	g.client = NewClient()
+
 	go g.notifyServer()
 	go g.listenServer()
 

@@ -45,27 +45,31 @@ func (c *Client) sendMessage(message string) {
 	}
 }
 
-func (g *Game) listen() {
-	buffer := make([]byte, 1024)
-	n, err := (*g.serverConnection).Read(buffer)
+func (g *Game) listenServer() {
+	for {
+		buffer := make([]byte, 1024)
+		n, err := (*g.serverConnection).Read(buffer)
 
-	if err != nil {
-		log.Println("Erreur en lisant les données du server")
-	}
+		if err != nil {
+			log.Println("Erreur en lisant les données du server")
+		}
 
-	var serverMessage serverMessage
-	err = json.Unmarshal(buffer[:n], &serverMessage)
+		var serverMessage serverMessage
+		err = json.Unmarshal(buffer[:n], &serverMessage)
 
-	log.Println("Message reçu du serveur: ", serverMessage)
+		log.Println("Message reçu du serveur: ", serverMessage)
 
-	if err != nil {
-		log.Println("Erreur en décodant les données")
-	}
+		if err != nil {
+			log.Println("Erreur en décodant les données")
+		}
 
-	log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
+		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
-	if serverMessage.State == StateChooseRunner {
-		log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
-		g.client.globalState = GlobalChooseRunner
+		if serverMessage.State == StateChooseRunner {
+			log.Println("Serveur prêt a changer d'état, valeur état serveur : ", serverMessage.State)
+			g.client.globalState = GlobalChooseRunner
+		}
+
+		log.Println("SDflikjhsdafliphsflpsadf")
 	}
 }
