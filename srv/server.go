@@ -18,8 +18,15 @@ const (
 )
 
 type Client struct {
-	conn *net.Conn
-	id   string
+	conn          *net.Conn
+	id            string
+	gameState     int
+	xpos          float64
+	ypos          float64
+	arrived       bool
+	runTime       time.Duration
+	colorScheme   int
+	colorSelected bool
 }
 
 type serverGameMessage struct {
@@ -54,16 +61,14 @@ func listenClient(conn *net.Conn) (serverGameMessage, error) {
 	return message, nil
 }
 
-func notifyClient(client *Client, gameState *int) {
-	data := serverGameMessage{*gameState, client.id, 0, 0, false, 0, 0, false}
-
-	jsonData, err := json.Marshal(data)
+func notifyClient(client *Client, message serverGameMessage) {
+	jsonData, err := json.Marshal(message)
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")
 	}
 
-	log.Println("Envoi des données au client: ", data)
+	log.Println("Envoi des données au client: ", message)
 
 	_, err = (*client.conn).Write(jsonData)
 
@@ -72,14 +77,16 @@ func notifyClient(client *Client, gameState *int) {
 	}
 }
 
-// permet de lire un message envoyé par un client
-func readMessage(conn *net.Conn) (string, error) {
-	buffer := make([]byte, 1024)
-	n, err := (*conn).Read(buffer)
-	if err != nil {
-		return "", err
-	}
-	return string(buffer[:n]), nil
+func buildServerGameMessage(client *Client) serverGameMessage {
+	return serverGameMessage{
+		client.gameState,
+		client.id,
+		client.xpos,
+		client.ypos,
+		client.arrived,
+		client.runTime,
+		client.colorScheme,
+		client.colorSelected}
 }
 
 func waitForAllClientsToChooseCharacter(clients []Client) {
@@ -102,6 +109,11 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 				}
 
 				if message.ColorSelected == true {
+					for _, clientToNotify := range clients {
+						if clientToNotify.id != message.IdPlayer {
+							notifyClient(&clientToNotify, buildServerGameMessage(&client))
+						}
+					}
 					channels[i] <- true
 					break
 				}
@@ -118,7 +130,8 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 func setState(gameState *int, newState int, clients []Client) {
 	*gameState = newState
 	for _, client := range clients {
-		notifyClient(&client, gameState)
+		client.gameState = newState
+		notifyClient(&client, buildServerGameMessage(&client))
 	}
 }
 
@@ -140,14 +153,14 @@ func main() {
 	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
-		clients = append(clients, Client{&conn, fmt.Sprint("Client-", len(clients))})
+		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false})
 
 		if err != nil {
 			log.Println("accept error:", err)
 			return
 		}
 
-		notifyClient(&clients[len(clients)-1], &gameState)
+		notifyClient(&clients[len(clients)-1], buildServerGameMessage(&clients[len(clients)-1]))
 	}
 
 	log.Println("Tous les clients sont connectés")
