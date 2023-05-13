@@ -35,11 +35,15 @@ func (g *Game) ChooseRunners() (done bool) {
 	for i := range g.runners {
 		if i == 0 {
 			done = g.runners[i].ManualChoose() && done
+
+			if g.runners[i].colorSelected {
+				g.notifyServer()
+			}
 		} else {
 			done = g.runners[i].RandomChoose() && done
 		}
 	}
-	return done
+	return g.client.globalState == GlobalLaunchRun
 }
 
 // HandleLaunchRun countdowns to the start of a run

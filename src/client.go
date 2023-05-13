@@ -10,7 +10,7 @@ import (
 type Client struct {
 	idPlayer    string
 	conn        net.Conn
-	runner      Runner
+	runner      *Runner
 	globalState int
 }
 
@@ -70,7 +70,8 @@ func (g *Game) listenServer() {
 			log.Println("Changement du nom à", serverMessage.IdPlayer)
 			g.client.idPlayer = serverMessage.IdPlayer
 			g.runners[0].playerName = serverMessage.IdPlayer
-			log.Println("Nom du runner à", g.runners[0].playerName)
+			g.client.runner.playerName = serverMessage.IdPlayer
+			log.Println("Nom du runner changer : ", g.runners[0].playerName)
 		}
 
 		switch serverMessage.State {
@@ -85,7 +86,8 @@ func (g *Game) listenServer() {
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, "", 0, 0, false, 0, 0, false})
+	jsonData, err := json.Marshal(serverGameMessage{g.state, g.client.idPlayer,
+		g.client.runner.xpos, g.client.runner.ypos, g.client.runner.arrived, g.client.runner.runTime, g.client.runner.colorScheme, g.client.runner.colorSelected})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")
