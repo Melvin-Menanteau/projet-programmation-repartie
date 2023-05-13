@@ -20,7 +20,6 @@ package main
 import (
 	"fmt"
 	"image"
-	"log"
 	"math/rand"
 	"time"
 
@@ -168,6 +167,5 @@ func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
 		yMod = -62
 	}
 	yPos := (screenHeight + yMod) / 2
-	log.Println("Nom perso", r.playerName)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", r.playerName), xPos, yPos)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", playerNum), xPos, yPos)
 }

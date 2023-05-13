@@ -87,6 +87,8 @@ func InitGame(serverConnection *net.Conn) *Game {
 		}
 	}
 
+	g.client.runner = &g.runners[0]
+
 	// Create the field
 	g.f = Field{
 		xstart:   start,
