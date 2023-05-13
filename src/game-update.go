@@ -16,6 +16,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -32,11 +33,16 @@ func (g *Game) HandleWelcomeScreen() bool {
 // of them selected
 func (g *Game) ChooseRunners() (done bool) {
 	done = true
-	for i := range g.runners {
-		if i == 0 {
-			done = g.runners[i].ManualChoose() && done
-		} else {
-			done = g.runners[i].RandomChoose() && done
+
+	numPlayer, err := strconv.Atoi(g.client.idPlayer)
+	if err != nil {
+		// handle error
+	}
+
+	for {
+		if g.runners[numPlayer].ManualChoose() {
+			// envoie un message au serveur pour dire que le joueur a choisi
+			break
 		}
 	}
 	return done
@@ -118,7 +124,7 @@ func (g *Game) Update() error {
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
-		if done {
+		if done && g.client.globalState == GlobalLaunchRun {
 			g.UpdateAnimation()
 			g.state++
 		}
