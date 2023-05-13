@@ -169,6 +169,6 @@ func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int, playe
 	yPos := (screenHeight + yMod) / 2
 	ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName), xPos, yPos)
 	if r.colorSelected {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName, " ready!"), xPos, 120)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName, " ready!"), xPos, yPos)
 	}
 }
