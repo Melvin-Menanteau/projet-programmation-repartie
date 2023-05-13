@@ -10,6 +10,7 @@ package main
 import (
 	"bytes"
 	"course/assets"
+	"fmt"
 	"image"
 	"log"
 	"net"
@@ -84,6 +85,7 @@ func InitGame(serverConnection *net.Conn) *Game {
 			xpos: start, ypos: 50 + float64(i*20),
 			maxFrameInterval: interval,
 			colorScheme:      0,
+			playerName:       fmt.Sprintf("Player%d", i),
 		}
 	}
 

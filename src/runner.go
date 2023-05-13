@@ -155,7 +155,7 @@ func (r *Runner) Draw(screen *ebiten.Image) {
 
 // DrawSelection draws the current selection of a runner appearance for the
 // player select screen
-func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
+func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int, playerName string) {
 	xMod := 32
 	if (playerNum/2)%2 == 0 {
 		xMod = -32
@@ -167,5 +167,8 @@ func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
 		yMod = -62
 	}
 	yPos := (screenHeight + yMod) / 2
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", playerNum), xPos, yPos)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName), xPos, yPos)
+	if r.colorSelected {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName, " ready!"), xPos, 120)
+	}
 }
