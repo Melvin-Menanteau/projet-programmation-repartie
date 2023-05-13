@@ -86,6 +86,7 @@ func readMessage(conn *net.Conn) (string, error) {
 	return string(buffer[:n]), nil
 }
 
+// fonction qui attend de recevoir un message de chaque client pour passer a l'état suivant
 func waitForAllClientsToChooseCharacter(clients []Client) {
 	channels := make([]chan bool, len(clients))
 
@@ -117,6 +118,7 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 	}
 }
 
+// fonction qui change l'état du jeu et notifie tous les clients
 func setState(gameState *int, newState int, clients []Client) {
 	*gameState = newState
 	for _, client := range clients {
@@ -158,7 +160,6 @@ func main() {
 	setState(&gameState, StateChooseRunner, clients)
 	log.Println("Notifier les clients: ", gameState)
 
-	// fonction qui attend de recevoir un message de chaque client pour passer a l'état suivant
 	waitForAllClientsToChooseCharacter(clients) // appel synchrone qui bloque le programme
 
 	log.Println("Tous les clients ont choisit leur personnage")
