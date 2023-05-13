@@ -67,10 +67,30 @@ func (g *Game) listenServer() {
 		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
 		if g.client.idPlayer != serverMessage.IdPlayer {
-			log.Println("Changement du nom à", serverMessage.IdPlayer)
-			g.client.idPlayer = serverMessage.IdPlayer
-			g.runners[0].playerName = serverMessage.IdPlayer
-			log.Println("Nom du runner à", g.runners[0].playerName)
+			if g.client.idPlayer == "" && serverMessage.IdPlayer != "" {
+				log.Println("Changement du nom à", serverMessage.IdPlayer)
+				g.client.idPlayer = serverMessage.IdPlayer
+				g.runners[0].playerName = serverMessage.IdPlayer
+				log.Println("Nom du runner à", g.runners[0].playerName)
+			} else {
+				for i := 0; i < len(g.runners); i++ {
+					if g.runners[i].playerName == "" {
+						g.runners[i].playerName = serverMessage.IdPlayer
+					}
+
+					if g.runners[i].playerName == serverMessage.IdPlayer {
+						g.runners[i].playerName = serverMessage.IdPlayer
+						g.runners[i].xpos = serverMessage.Xpos
+						g.runners[i].ypos = serverMessage.Ypos
+						g.runners[i].arrived = serverMessage.Arrived
+						g.runners[i].runTime = serverMessage.RunTime
+						g.runners[i].colorScheme = serverMessage.ColorScheme
+						g.runners[i].colorSelected = serverMessage.ColorSelected
+
+						break
+					}
+				}
+			}
 		}
 
 		switch serverMessage.State {
