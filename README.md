@@ -1,5 +1,5 @@
 # Projet-programmation-repartie | IUT de Nantes 
-
+### Auger-Dubois benoit & Menanteau melvin
 Bienvenue dans notre projet de programmation répartie en Go.
 L'objectif du projet est de permettre à quatre joueurs de jouer ensemble en réseau à un jeu de course qui était à l'origine destiné à être joué en local.
 
