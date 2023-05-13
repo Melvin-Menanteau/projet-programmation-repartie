@@ -33,29 +33,25 @@ type serverGameMessage struct {
 	ColorSelected bool
 }
 
-func listenClient(conn *net.Conn) {
-	for {
-		buffer := make([]byte, 4096)
-		n, err := (*conn).Read(buffer)
+func listenClient(conn *net.Conn) (serverGameMessage, error) {
+	buffer := make([]byte, 4096)
+	n, err := (*conn).Read(buffer)
 
-		if n == 0 {
-			continue
-		}
-
-		if err != nil {
-			log.Println("Erreur en lisant les données")
-			continue
-		}
-
-		var message serverGameMessage
-		err = json.Unmarshal(buffer[:n], &message)
-
-		if err != nil {
-			continue
-		}
-
-		log.Println("Message reçu du client: ", message)
+	if err != nil {
+		log.Println("Erreur en lisant les données")
+		return serverGameMessage{}, err
 	}
+
+	var message serverGameMessage
+	err = json.Unmarshal(buffer[:n], &message)
+
+	if err != nil {
+		log.Println("Erreur en décodant les données")
+		return serverGameMessage{}, err
+	}
+
+	log.Println("Message reçu du client: ", message)
+	return message, nil
 }
 
 func notifyClient(client *Client, gameState *int) {
@@ -98,12 +94,12 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 	for i, client := range clients {
 		go func(i int, client Client) {
 			for {
-				message, err := readMessage(client.conn)
+				message, err := listenClient(client.conn)
 				if err != nil {
 					log.Println("error reading message from client ", client.id, err)
 					continue
 				}
-				if message == "true" {
+				if message.ColorSelected == true {
 					channels[i] <- true
 					break
 				}
@@ -139,7 +135,7 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 4 {
+	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
 		clients = append(clients, Client{&conn, fmt.Sprint("client-", len(clients))})
@@ -150,7 +146,6 @@ func main() {
 		}
 
 		notifyClient(&clients[len(clients)-1], &gameState)
-		go listenClient(&conn)
 	}
 
 	log.Println("Tous les clients sont connectés")
