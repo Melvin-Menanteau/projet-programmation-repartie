@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -23,6 +24,7 @@ type serverGameMessage struct {
 	RunTime       time.Duration
 	ColorScheme   int
 	ColorSelected bool
+	IsSelf        bool
 }
 
 const (
@@ -48,7 +50,7 @@ func (c *Client) connect(address string) error {
 
 func (g *Game) listenServer() {
 	for {
-		buffer := make([]byte, 4096)
+		buffer := make([]byte, 1024)
 		n, err := (*g.serverConnection).Read(buffer)
 
 		if err != nil {
@@ -66,29 +68,30 @@ func (g *Game) listenServer() {
 
 		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
 
-		if g.client.idPlayer != serverMessage.IdPlayer {
-			if g.client.idPlayer == "" && serverMessage.IdPlayer != "" {
+		if serverMessage.IsSelf {
+			if g.client.idPlayer != serverMessage.IdPlayer {
 				log.Println("Changement du nom à", serverMessage.IdPlayer)
 				g.client.idPlayer = serverMessage.IdPlayer
 				g.runners[0].playerName = serverMessage.IdPlayer
 				log.Println("Nom du runner à", g.runners[0].playerName)
-			} else {
-				for i := 0; i < len(g.runners); i++ {
-					if g.runners[i].playerName == "" {
-						g.runners[i].playerName = serverMessage.IdPlayer
-					}
+			}
+		} else {
+			for i := 0; i < len(g.runners); i++ {
+				if g.runners[i].playerName == "" {
+					log.Println(fmt.Sprintf("Le runner %d a été attribué à %s", i, serverMessage.IdPlayer))
+					g.runners[i].playerName = serverMessage.IdPlayer
+				}
 
-					if g.runners[i].playerName == serverMessage.IdPlayer {
-						g.runners[i].playerName = serverMessage.IdPlayer
-						g.runners[i].xpos = serverMessage.Xpos
-						g.runners[i].ypos = serverMessage.Ypos
-						g.runners[i].arrived = serverMessage.Arrived
-						g.runners[i].runTime = serverMessage.RunTime
-						g.runners[i].colorScheme = serverMessage.ColorScheme
-						g.runners[i].colorSelected = serverMessage.ColorSelected
+				if g.runners[i].playerName == serverMessage.IdPlayer {
+					g.runners[i].playerName = serverMessage.IdPlayer
+					g.runners[i].xpos = serverMessage.Xpos
+					g.runners[i].ypos = serverMessage.Ypos
+					g.runners[i].arrived = serverMessage.Arrived
+					g.runners[i].runTime = serverMessage.RunTime
+					g.runners[i].colorScheme = serverMessage.ColorScheme
+					g.runners[i].colorSelected = serverMessage.ColorSelected
 
-						break
-					}
+					break
 				}
 			}
 		}
@@ -105,7 +108,7 @@ func (g *Game) listenServer() {
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, g.client.idPlayer, g.client.runner.xpos, g.client.runner.ypos, g.client.runner.arrived, g.client.runner.runTime, g.client.runner.colorScheme, g.client.runner.colorSelected})
+	jsonData, err := json.Marshal(serverGameMessage{g.state, g.client.idPlayer, g.client.runner.xpos, g.client.runner.ypos, g.client.runner.arrived, g.client.runner.runTime, g.client.runner.colorScheme, g.client.runner.colorSelected, true})
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

@@ -38,10 +38,11 @@ type serverGameMessage struct {
 	RunTime       time.Duration
 	ColorScheme   int
 	ColorSelected bool
+	IsSelf        bool
 }
 
 func listenClient(conn *net.Conn) (serverGameMessage, error) {
-	buffer := make([]byte, 4096)
+	buffer := make([]byte, 1024)
 	n, err := (*conn).Read(buffer)
 
 	if err != nil {
@@ -58,6 +59,7 @@ func listenClient(conn *net.Conn) (serverGameMessage, error) {
 	}
 
 	log.Println("Message reçu du client: ", message)
+
 	return message, nil
 }
 
@@ -77,7 +79,7 @@ func notifyClient(client *Client, message serverGameMessage) {
 	}
 }
 
-func buildServerGameMessage(client *Client) serverGameMessage {
+func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 	return serverGameMessage{
 		client.gameState,
 		client.id,
@@ -86,7 +88,8 @@ func buildServerGameMessage(client *Client) serverGameMessage {
 		client.arrived,
 		client.runTime,
 		client.colorScheme,
-		client.colorSelected}
+		client.colorSelected,
+		isSelf}
 }
 
 func waitForAllClientsToChooseCharacter(clients []Client) {
@@ -109,9 +112,12 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 				}
 
 				if message.ColorSelected == true {
+					client.colorScheme = message.ColorScheme
+					client.colorSelected = true
+
 					for _, clientToNotify := range clients {
 						if clientToNotify.id != message.IdPlayer {
-							notifyClient(&clientToNotify, buildServerGameMessage(&client))
+							notifyClient(&clientToNotify, buildServerGameMessage(&client, false))
 						}
 					}
 					channels[i] <- true
@@ -131,7 +137,7 @@ func setState(gameState *int, newState int, clients []Client) {
 	*gameState = newState
 	for _, client := range clients {
 		client.gameState = newState
-		notifyClient(&client, buildServerGameMessage(&client))
+		notifyClient(&client, buildServerGameMessage(&client, true))
 	}
 }
 
@@ -160,7 +166,7 @@ func main() {
 			return
 		}
 
-		notifyClient(&clients[len(clients)-1], buildServerGameMessage(&clients[len(clients)-1]))
+		notifyClient(&clients[len(clients)-1], buildServerGameMessage(&clients[len(clients)-1], true))
 	}
 
 	log.Println("Tous les clients sont connectés")
