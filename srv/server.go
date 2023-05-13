@@ -82,7 +82,6 @@ func readMessage(conn *net.Conn) (string, error) {
 	return string(buffer[:n]), nil
 }
 
-// fonction qui attend de recevoir un message de chaque client pour passer a l'état suivant
 func waitForAllClientsToChooseCharacter(clients []Client) {
 	channels := make([]chan bool, len(clients))
 
@@ -96,10 +95,12 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 		go func(i int, client Client) {
 			for {
 				message, err := listenClient(client.conn)
+
 				if err != nil {
 					log.Println("error reading message from client ", client.id, err)
 					continue
 				}
+
 				if message.ColorSelected == true {
 					channels[i] <- true
 					break
@@ -114,7 +115,6 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 	}
 }
 
-// fonction qui change l'état du jeu et notifie tous les clients
 func setState(gameState *int, newState int, clients []Client) {
 	*gameState = newState
 	for _, client := range clients {
@@ -140,7 +140,7 @@ func main() {
 	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
-		clients = append(clients, Client{&conn, fmt.Sprint("client-", len(clients))})
+		clients = append(clients, Client{&conn, fmt.Sprint("Client-", len(clients))})
 
 		if err != nil {
 			log.Println("accept error:", err)
@@ -155,6 +155,7 @@ func main() {
 	setState(&gameState, StateChooseRunner, clients)
 	log.Println("Notifier les clients: ", gameState)
 
+	// fonction qui attend de recevoir un message de chaque client pour passer a l'état suivant
 	waitForAllClientsToChooseCharacter(clients) // appel synchrone qui bloque le programme
 
 	log.Println("Tous les clients ont choisit leur personnage")

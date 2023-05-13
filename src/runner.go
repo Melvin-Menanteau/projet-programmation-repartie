@@ -20,6 +20,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"log"
 	"math/rand"
 	"time"
 
@@ -40,6 +41,7 @@ type Runner struct {
 	colorSelected     bool          // Tells if the color scheme is fixed or not
 	animationStep     int           // Current step of the runner animation
 	animationFrame    int           // Number of frames since the last animation step
+	playerName        string        // Name of the player
 }
 
 // ManualUpdate allows to use the keyboard in order to control a runner
@@ -166,5 +168,6 @@ func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
 		yMod = -62
 	}
 	yPos := (screenHeight + yMod) / 2
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", playerNum), xPos, yPos)
+	log.Println("Nom perso", r.playerName)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", r.playerName), xPos, yPos)
 }

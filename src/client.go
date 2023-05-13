@@ -69,6 +69,8 @@ func (g *Game) listenServer() {
 		if g.client.idPlayer != serverMessage.IdPlayer {
 			log.Println("Changement du nom à", serverMessage.IdPlayer)
 			g.client.idPlayer = serverMessage.IdPlayer
+			g.runners[0].playerName = serverMessage.IdPlayer
+			log.Println("Nom du runner à", g.runners[0].playerName)
 		}
 
 		switch serverMessage.State {
