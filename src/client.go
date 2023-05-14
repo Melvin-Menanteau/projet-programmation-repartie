@@ -98,10 +98,10 @@ func (g *Game) listenServer() {
 			}
 		} else {
 			for i := 0; i < len(g.runners); i++ {
-				if g.runners[i].isAI {
+				if !g.runners[i].hasBeenAttributed {
 					log.Println(fmt.Sprintf("Le runner %d a été attribué à %s", i, serverMessage.IdPlayer))
 					g.runners[i].playerName = serverMessage.IdPlayer
-					g.runners[i].isAI = false
+					g.runners[i].hasBeenAttributed = true
 				}
 
 				if g.runners[i].playerName == serverMessage.IdPlayer {
@@ -132,9 +132,9 @@ func (g *Game) notifyServer() {
 		g.client.runner.colorSelected,
 		true})
 
-	// if g.state == StateChooseRunner || g.state == StateLaunchRun {
-	// 	log.Println("Envoi des données au serveur: ", string(jsonData))
-	// }
+	if g.state == StateChooseRunner || g.state == StateRun {
+		log.Println("Envoi des données au serveur: ", string(jsonData))
+	}
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

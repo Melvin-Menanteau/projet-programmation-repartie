@@ -40,7 +40,11 @@ func (g *Game) ChooseRunners() (done bool) {
 				g.notifyServer()
 			}
 		} else {
-			done = g.runners[i].RandomChoose() && done
+			if g.runners[i].hasBeenAttributed {
+				done = g.runners[i].colorSelected && done
+			} else {
+				done = g.runners[i].RandomChoose() && done
+			}
 		}
 	}
 	return g.client.globalState == GlobalLaunchRun
@@ -66,7 +70,7 @@ func (g *Game) UpdateRunners() {
 			g.runners[i].ManualUpdate()
 			g.notifyServer()
 		} else {
-			if !g.runners[i].isAI {
+			if !g.runners[i].hasBeenAttributed {
 				g.runners[i].RandomUpdate()
 			}
 		}

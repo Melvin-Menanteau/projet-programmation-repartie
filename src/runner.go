@@ -41,7 +41,7 @@ type Runner struct {
 	animationStep     int           // Current step of the runner animation
 	animationFrame    int           // Number of frames since the last animation step
 	playerName        string        // Name of the player
-	isAI              bool          // Tells if the runner is controlled by an AI or not
+	hasBeenAttributed bool          // Tells if the runner is controlled by an AI or not
 }
 
 // ManualUpdate allows to use the keyboard in order to control a runner

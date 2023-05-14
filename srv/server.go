@@ -86,6 +86,8 @@ func notifyAllClients(clients []Client, sourceClient Client) {
 }
 
 func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
+	log.Println("[BuildServerGameMessage] Construction du message pour le client ", client)
+
 	return serverGameMessage{
 		client.gameState,
 		client.id,
@@ -119,16 +121,11 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 				}
 
 				if message.ColorSelected == true {
-					client.colorScheme = message.ColorScheme
-					client.colorSelected = true
+					clients[i].colorScheme = message.ColorScheme
+					clients[i].colorSelected = true
 
-					notifyAllClients(clients, client)
+					notifyAllClients(clients, clients[i])
 
-					// for _, clientToNotify := range clients {
-					// 	if clientToNotify.id != message.IdPlayer {
-					// 		notifyClient(&clientToNotify, buildServerGameMessage(&client, false))
-					// 	}
-					// }
 					channels[i] <- true
 					break
 				}
@@ -166,7 +163,9 @@ func waitForAllClientsToFinishRun(clients []Client) {
 					channels[i] <- true
 					break
 				} else {
-					notifyAllClients(clients, client)
+					clients[i].xpos = message.Xpos
+
+					notifyAllClients(clients, clients[i])
 				}
 			}
 		}(i, client)
