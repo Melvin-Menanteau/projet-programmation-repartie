@@ -231,7 +231,7 @@ func main() {
 	setState(&gameState, StateLaunchRun, clients)
 
 	// Attends que tous le clients aient finis la course
-	// waitForAllClientsToFinishRun(clients)
+	waitForAllClientsToFinishRun(clients)
 
 	log.Println("Tous les clients ont finis la course")
 	setState(&gameState, StateResult, clients)
