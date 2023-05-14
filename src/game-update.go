@@ -68,7 +68,6 @@ func (g *Game) UpdateRunners() {
 	for i := range g.runners {
 		if i == 0 {
 			g.runners[i].ManualUpdate()
-			g.notifyServer()
 		} else {
 			if !g.runners[i].hasBeenAttributed {
 				g.runners[i].RandomUpdate()
@@ -142,6 +141,7 @@ func (g *Game) Update() error {
 		g.UpdateRunners()
 		finished := g.CheckArrival()
 		g.UpdateAnimation()
+		g.notifyServer()
 		if finished && g.client.globalState == GlobalResult {
 			g.state++
 		}

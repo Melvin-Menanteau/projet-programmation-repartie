@@ -135,9 +135,9 @@ func (g *Game) notifyServer() {
 		g.client.runner.animationFrame,
 		true})
 
-	// if g.state == StateChooseRunner || g.state == StateRun {
-	// 	log.Println("Envoi des données au serveur: ", string(jsonData))
-	// }
+	if g.state == StateChooseRunner || g.state == StateRun {
+		log.Println("Envoi des données au serveur: ", string(jsonData))
+	}
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")
