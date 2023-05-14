@@ -16,15 +16,16 @@ type Client struct {
 }
 
 type serverGameMessage struct {
-	State         int
-	IdPlayer      string
-	Xpos          float64
-	Ypos          float64
-	Arrived       bool
-	RunTime       time.Duration
-	ColorScheme   int
-	ColorSelected bool
-	IsSelf        bool
+	State          int
+	IdPlayer       string
+	Xpos           float64
+	Ypos           float64
+	Arrived        bool
+	RunTime        time.Duration
+	ColorScheme    int
+	ColorSelected  bool
+	AnimationFrame int
+	IsSelf         bool
 }
 
 const (
@@ -112,6 +113,7 @@ func (g *Game) listenServer() {
 					g.runners[i].runTime = serverMessage.RunTime
 					g.runners[i].colorScheme = serverMessage.ColorScheme
 					g.runners[i].colorSelected = serverMessage.ColorSelected
+					g.runners[i].animationFrame = serverMessage.AnimationFrame
 
 					break
 				}
@@ -130,11 +132,12 @@ func (g *Game) notifyServer() {
 		g.client.runner.runTime,
 		g.client.runner.colorScheme,
 		g.client.runner.colorSelected,
+		g.client.runner.animationFrame,
 		true})
 
-	if g.state == StateChooseRunner || g.state == StateRun {
-		log.Println("Envoi des données au serveur: ", string(jsonData))
-	}
+	// if g.state == StateChooseRunner || g.state == StateRun {
+	// 	log.Println("Envoi des données au serveur: ", string(jsonData))
+	// }
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

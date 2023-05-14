@@ -18,27 +18,29 @@ const (
 )
 
 type Client struct {
-	conn          *net.Conn
-	id            string
-	gameState     int
-	xpos          float64
-	ypos          float64
-	arrived       bool
-	runTime       time.Duration
-	colorScheme   int
-	colorSelected bool
+	conn           *net.Conn
+	id             string
+	gameState      int
+	xpos           float64
+	ypos           float64
+	arrived        bool
+	runTime        time.Duration
+	colorScheme    int
+	colorSelected  bool
+	animationFrame int
 }
 
 type serverGameMessage struct {
-	State         int
-	IdPlayer      string
-	Xpos          float64
-	Ypos          float64
-	Arrived       bool
-	RunTime       time.Duration
-	ColorScheme   int
-	ColorSelected bool
-	IsSelf        bool
+	State          int
+	IdPlayer       string
+	Xpos           float64
+	Ypos           float64
+	Arrived        bool
+	RunTime        time.Duration
+	ColorScheme    int
+	ColorSelected  bool
+	AnimationFrame int
+	IsSelf         bool
 }
 
 func listenClient(conn *net.Conn) (serverGameMessage, error) {
@@ -97,6 +99,7 @@ func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 		client.runTime,
 		client.colorScheme,
 		client.colorSelected,
+		client.animationFrame,
 		isSelf}
 }
 
@@ -164,6 +167,7 @@ func waitForAllClientsToFinishRun(clients []Client) {
 					break
 				} else {
 					clients[i].xpos = message.Xpos
+					clients[i].animationFrame = message.AnimationFrame
 
 					notifyAllClients(clients, clients[i])
 				}
@@ -203,7 +207,7 @@ func main() {
 	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
-		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false})
+		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0})
 
 		if err != nil {
 			log.Println("accept error:", err)
