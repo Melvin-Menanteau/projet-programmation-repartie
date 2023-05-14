@@ -135,7 +135,7 @@ func (g *Game) Update() error {
 		g.UpdateRunners()
 		finished := g.CheckArrival()
 		g.UpdateAnimation()
-		if finished {
+		if finished && g.client.globalState == GlobalResult {
 			g.state++
 		}
 	case StateResult:

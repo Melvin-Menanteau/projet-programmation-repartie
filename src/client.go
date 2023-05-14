@@ -31,6 +31,8 @@ const (
 	GlobalWelcomeScreen int = iota
 	GlobalChooseRunner
 	GlobalLaunchRun
+	GlobalStateRun
+	GlobalResult
 )
 
 func NewClient() *Client {
@@ -97,11 +99,20 @@ func (g *Game) listenServer() {
 		}
 
 		switch serverMessage.State {
+		case StateWelcomeScreen:
+			g.client.globalState = GlobalWelcomeScreen
+			break
 		case StateChooseRunner:
 			g.client.globalState = GlobalChooseRunner
 			break
 		case StateLaunchRun:
 			g.client.globalState = GlobalLaunchRun
+			break
+		case StateRun:
+			g.client.globalState = GlobalStateRun
+			break
+		case StateResult:
+			g.client.globalState = GlobalResult
 			break
 		}
 	}

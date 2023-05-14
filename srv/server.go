@@ -92,6 +92,7 @@ func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 		isSelf}
 }
 
+// Attendre que tous les clients aient choisi leur personnage
 func waitForAllClientsToChooseCharacter(clients []Client) {
 	channels := make([]chan bool, len(clients))
 
@@ -120,6 +121,40 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 							notifyClient(&clientToNotify, buildServerGameMessage(&client, false))
 						}
 					}
+					channels[i] <- true
+					break
+				}
+			}
+		}(i, client)
+	}
+
+	// Attendre que tous les canaux aient reçu une valeur true
+	for _, ch := range channels {
+		<-ch
+	}
+}
+
+// Attends que tous les clients aient finis la course
+func waitForAllClientsToFinishRun(clients []Client) {
+	channels := make([]chan bool, len(clients))
+
+	// Créer un canal pour chaque client
+	for i := 0; i < len(clients); i++ {
+		channels[i] = make(chan bool)
+	}
+
+	// Lancer une goroutine pour chaque client qui attend un message booléen
+	for i, client := range clients {
+		go func(i int, client Client) {
+			for {
+				message, err := listenClient(client.conn)
+
+				if err != nil {
+					log.Println("error reading message from client ", client.id, err)
+					continue
+				}
+
+				if message.Arrived == true {
 					channels[i] <- true
 					break
 				}
@@ -179,6 +214,12 @@ func main() {
 
 	log.Println("Tous les clients ont choisit leur personnage")
 	setState(&gameState, StateLaunchRun, clients)
+
+	// Attends que tous le clients aient finis la course
+	waitForAllClientsToFinishRun(clients)
+
+	log.Println("Tous les clients ont finis la course")
+	setState(&gameState, StateResult, clients)
 
 	for {
 		time.Sleep(1 * time.Second)
