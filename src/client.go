@@ -52,7 +52,7 @@ func (c *Client) connect(address string) error {
 
 func (g *Game) listenServer() {
 	for {
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 4096)
 		n, err := (*g.serverConnection).Read(buffer)
 
 		if err != nil {
@@ -68,26 +68,46 @@ func (g *Game) listenServer() {
 			log.Println("Erreur en décodant les données")
 		}
 
-		log.Println("ancien état / nouveau état : ", g.state, "/", serverMessage.State)
-
 		if serverMessage.IsSelf {
+			if g.state != serverMessage.State {
+				log.Println("Changement d'état de ", g.state, " => ", serverMessage.State)
+
+				switch serverMessage.State {
+				case StateWelcomeScreen:
+					g.client.globalState = GlobalWelcomeScreen
+					break
+				case StateChooseRunner:
+					g.client.globalState = GlobalChooseRunner
+					break
+				case StateLaunchRun:
+					g.client.globalState = GlobalLaunchRun
+					break
+				case StateRun:
+					g.client.globalState = GlobalStateRun
+					break
+				case StateResult:
+					g.client.globalState = GlobalResult
+					break
+				}
+			}
+
 			if g.client.idPlayer != serverMessage.IdPlayer {
 				log.Println("Changement du nom à", serverMessage.IdPlayer)
 				g.client.idPlayer = serverMessage.IdPlayer
 				g.runners[0].playerName = serverMessage.IdPlayer
-				log.Println("Nom du runner à", g.runners[0].playerName)
 			}
 		} else {
 			for i := 0; i < len(g.runners); i++ {
-				if g.runners[i].playerName == "" {
+				if g.runners[i].isAI {
 					log.Println(fmt.Sprintf("Le runner %d a été attribué à %s", i, serverMessage.IdPlayer))
 					g.runners[i].playerName = serverMessage.IdPlayer
+					g.runners[i].isAI = false
 				}
 
 				if g.runners[i].playerName == serverMessage.IdPlayer {
 					g.runners[i].playerName = serverMessage.IdPlayer
 					g.runners[i].xpos = serverMessage.Xpos
-					g.runners[i].ypos = serverMessage.Ypos
+					// g.runners[i].ypos = serverMessage.Ypos
 					g.runners[i].arrived = serverMessage.Arrived
 					g.runners[i].runTime = serverMessage.RunTime
 					g.runners[i].colorScheme = serverMessage.ColorScheme
@@ -97,29 +117,24 @@ func (g *Game) listenServer() {
 				}
 			}
 		}
-
-		switch serverMessage.State {
-		case StateWelcomeScreen:
-			g.client.globalState = GlobalWelcomeScreen
-			break
-		case StateChooseRunner:
-			g.client.globalState = GlobalChooseRunner
-			break
-		case StateLaunchRun:
-			g.client.globalState = GlobalLaunchRun
-			break
-		case StateRun:
-			g.client.globalState = GlobalStateRun
-			break
-		case StateResult:
-			g.client.globalState = GlobalResult
-			break
-		}
 	}
 }
 
 func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverGameMessage{g.state, g.client.idPlayer, g.client.runner.xpos, g.client.runner.ypos, g.client.runner.arrived, g.client.runner.runTime, g.client.runner.colorScheme, g.client.runner.colorSelected, true})
+	jsonData, err := json.Marshal(serverGameMessage{
+		g.state,
+		g.client.idPlayer,
+		g.client.runner.xpos,
+		g.client.runner.ypos,
+		g.client.runner.arrived,
+		g.client.runner.runTime,
+		g.client.runner.colorScheme,
+		g.client.runner.colorSelected,
+		true})
+
+	// if g.state == StateChooseRunner || g.state == StateLaunchRun {
+	// 	log.Println("Envoi des données au serveur: ", string(jsonData))
+	// }
 
 	if err != nil {
 		log.Println("Erreur en encodant les données")

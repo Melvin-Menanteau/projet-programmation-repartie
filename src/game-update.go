@@ -64,8 +64,11 @@ func (g *Game) UpdateRunners() {
 	for i := range g.runners {
 		if i == 0 {
 			g.runners[i].ManualUpdate()
+			g.notifyServer()
 		} else {
-			g.runners[i].RandomUpdate()
+			if !g.runners[i].isAI {
+				g.runners[i].RandomUpdate()
+			}
 		}
 	}
 }

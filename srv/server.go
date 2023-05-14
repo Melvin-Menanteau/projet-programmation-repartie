@@ -42,11 +42,11 @@ type serverGameMessage struct {
 }
 
 func listenClient(conn *net.Conn) (serverGameMessage, error) {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 4096)
 	n, err := (*conn).Read(buffer)
 
 	if err != nil {
-		log.Println("Erreur en lisant les données")
+		log.Println("[ListenClient] Erreur en lisant les données")
 		return serverGameMessage{}, err
 	}
 
@@ -54,11 +54,11 @@ func listenClient(conn *net.Conn) (serverGameMessage, error) {
 	err = json.Unmarshal(buffer[:n], &message)
 
 	if err != nil {
-		log.Println("Erreur en décodant les données")
+		log.Println("[ListenClient] Erreur en décodant les données")
 		return serverGameMessage{}, err
 	}
 
-	log.Println("Message reçu du client: ", message)
+	log.Println("[ListenClient] Message reçu du client: ", message)
 
 	return message, nil
 }
@@ -67,15 +67,21 @@ func notifyClient(client *Client, message serverGameMessage) {
 	jsonData, err := json.Marshal(message)
 
 	if err != nil {
-		log.Println("Erreur en encodant les données")
+		log.Println("[NotifyClient] Erreur en encodant les données")
 	}
 
-	log.Println("Envoi des données au client: ", message)
+	log.Println(fmt.Sprintf("[NotifyClient] Envoi des données au client (%s): ", client.id), message)
 
 	_, err = (*client.conn).Write(jsonData)
 
 	if err != nil {
-		log.Println("Erreur en envoyant les données")
+		log.Println("[NotifyClient] Erreur en envoyant les données")
+	}
+}
+
+func notifyAllClients(clients []Client, sourceClient Client) {
+	for _, client := range clients {
+		notifyClient(&client, buildServerGameMessage(&sourceClient, client.id == sourceClient.id))
 	}
 }
 
@@ -116,11 +122,13 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 					client.colorScheme = message.ColorScheme
 					client.colorSelected = true
 
-					for _, clientToNotify := range clients {
-						if clientToNotify.id != message.IdPlayer {
-							notifyClient(&clientToNotify, buildServerGameMessage(&client, false))
-						}
-					}
+					notifyAllClients(clients, client)
+
+					// for _, clientToNotify := range clients {
+					// 	if clientToNotify.id != message.IdPlayer {
+					// 		notifyClient(&clientToNotify, buildServerGameMessage(&client, false))
+					// 	}
+					// }
 					channels[i] <- true
 					break
 				}
@@ -157,6 +165,8 @@ func waitForAllClientsToFinishRun(clients []Client) {
 				if message.Arrived == true {
 					channels[i] <- true
 					break
+				} else {
+					notifyAllClients(clients, client)
 				}
 			}
 		}(i, client)
@@ -213,10 +223,15 @@ func main() {
 	waitForAllClientsToChooseCharacter(clients) // appel synchrone qui bloque le programme
 
 	log.Println("Tous les clients ont choisit leur personnage")
+
+	for _, client := range clients {
+		log.Println("Client: ", client.id, " - Couleur: ", client.colorScheme)
+	}
+
 	setState(&gameState, StateLaunchRun, clients)
 
 	// Attends que tous le clients aient finis la course
-	waitForAllClientsToFinishRun(clients)
+	// waitForAllClientsToFinishRun(clients)
 
 	log.Println("Tous les clients ont finis la course")
 	setState(&gameState, StateResult, clients)

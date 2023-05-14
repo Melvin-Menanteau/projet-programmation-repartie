@@ -78,14 +78,17 @@ func InitGame(serverConnection *net.Conn) *Game {
 	// Create the runners
 	for i := range g.runners {
 		interval := 0
+		isAI := true
 		if i == 0 {
 			interval = frameInterval
+			isAI = false
 		}
 		g.runners[i] = Runner{
 			xpos: start, ypos: 50 + float64(i*20),
 			maxFrameInterval: interval,
 			colorScheme:      0,
 			playerName:       fmt.Sprintf("Player%d", i),
+			isAI:             isAI,
 		}
 	}
 
