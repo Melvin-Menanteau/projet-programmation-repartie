@@ -13,6 +13,7 @@ type Client struct {
 	conn        net.Conn
 	runner      *Runner
 	globalState int
+	nbPlayersReady int
 }
 
 type serverGameMessage struct {
@@ -26,6 +27,7 @@ type serverGameMessage struct {
 	ColorSelected  bool
 	AnimationFrame int
 	IsSelf         bool
+	NbPlayersReady int
 }
 
 const (
@@ -70,6 +72,10 @@ func (g *Game) listenServer() {
 		}
 
 		if serverMessage.IsSelf {
+			// On met à jour les données du client
+			g.client.nbPlayersReady = serverMessage.NbPlayersReady
+
+			// Si l'état du jeu a changé, on change l'état du client
 			if g.state != serverMessage.State {
 				log.Println("Changement d'état de ", g.state, " => ", serverMessage.State)
 
@@ -92,6 +98,7 @@ func (g *Game) listenServer() {
 				}
 			}
 
+			// Si le nom du client a changé, on change le nom du client
 			if g.client.idPlayer != serverMessage.IdPlayer {
 				log.Println("Changement du nom à", serverMessage.IdPlayer)
 				g.client.idPlayer = serverMessage.IdPlayer
@@ -148,7 +155,8 @@ func (g *Game) notifyServer() {
 		g.client.runner.colorScheme,
 		g.client.runner.colorSelected,
 		g.client.runner.animationFrame,
-		true})
+		true,
+		g.client.nbPlayersReady})
 
 	if g.state == StateChooseRunner || g.state == StateRun {
 		log.Println("Envoi des données au serveur: ", string(jsonData))

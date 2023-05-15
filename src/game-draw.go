@@ -38,17 +38,7 @@ func (g *Game) DrawWelcomeScreen(screen *ebiten.Image) {
 
 	ebitenutil.DebugPrintAt(
 		screen,
-		fmt.Sprintf("%d joueur connectés", func() int {
-			count := 0
-
-			for i := range g.runners {
-				if g.runners[i].hasBeenAttributed {
-					count++
-				}
-			}
-
-			return count
-		}()),
+		fmt.Sprintf("%d joueur connectés", g.client.nbPlayersReady),
 		screenWidth/2-60,
 		screenHeight/2+30,
 	)
@@ -114,7 +104,7 @@ func (g *Game) DrawResult(screen *ebiten.Image) {
 
 	for i := 1; i < g.resultStep && i <= 4; i++ {
 		s, ms := GetSeconds(g.runners[ranking[i-1]].runTime.Milliseconds())
-		ebitenutil.DebugPrintAt(screen, fmt.Sprint(i, ". P", ranking[i-1], "     ", s, ":", ms), screenWidth/2-40, 55+ranking[i-1]*20)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprint(i, ". ", g.runners[ranking[i-1]].playerName, "     ", s, ":", ms), screenWidth/2-40, 55+ranking[i-1]*20)
 	}
 
 	if g.resultStep > 4 {

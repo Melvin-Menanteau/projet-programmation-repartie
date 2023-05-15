@@ -28,6 +28,7 @@ type Client struct {
 	colorScheme    int
 	colorSelected  bool
 	animationFrame int
+	nbPlayersReady int
 }
 
 type serverGameMessage struct {
@@ -41,6 +42,7 @@ type serverGameMessage struct {
 	ColorSelected  bool
 	AnimationFrame int
 	IsSelf         bool
+	NbPlayersReady int
 }
 
 func listenClient(conn *net.Conn) (serverGameMessage, error) {
@@ -100,7 +102,8 @@ func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 		client.colorScheme,
 		client.colorSelected,
 		client.animationFrame,
-		isSelf}
+		isSelf,
+		client.nbPlayersReady}
 }
 
 // Attendre que tous les clients aient choisi leur personnage
@@ -206,10 +209,10 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 4 {
+	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
-		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0})
+		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0, len(clients)})
 
 		if err != nil {
 			log.Println("accept error:", err)
@@ -218,7 +221,8 @@ func main() {
 
 		notifyClient(&clients[len(clients)-1], buildServerGameMessage(&clients[len(clients)-1], true))
 
-		for _, client := range clients {
+		for i, client := range clients {
+			clients[i].nbPlayersReady = len(clients)
 			notifyAllClients(clients, client)
 		}
 	}
@@ -233,11 +237,13 @@ func main() {
 
 	log.Println("Tous les clients ont choisit leur personnage")
 
-	for _, client := range clients {
-		log.Println("Client: ", client.id, " - Couleur: ", client.colorScheme)
-	}
-
 	setState(&gameState, StateLaunchRun, clients)
+
+	// Remettre le nombre de joueurs prêt à 0 pour ne pas pouvoir relancer la course directement après les résultats
+	// for i, client := range clients {
+	// 	clients[i].nbPlayersReady = 0
+	// 	notifyAllClients(clients, client)
+	// }
 
 	// Attends que tous le clients aient finis la course
 	waitForAllClientsToFinishRun(clients)
