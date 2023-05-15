@@ -123,14 +123,27 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 					continue
 				}
 
+				clients[i].colorScheme = message.ColorScheme
+				clients[i].colorSelected = true
+
+				notifyAllClients(clients, clients[i])
+
 				if message.ColorSelected == true {
-					clients[i].colorScheme = message.ColorScheme
-					clients[i].colorSelected = true
-
-					notifyAllClients(clients, clients[i])
-
 					channels[i] <- true
-					break
+
+					if (func() bool {
+						for _, ch := range channels {
+							if <-ch == false {
+								return false
+							}
+						}
+
+						return true
+					}()) {
+						log.Println("All clients have chosen their character")
+						break
+					}
+
 				}
 			}
 		}(i, client)
@@ -162,14 +175,16 @@ func waitForAllClientsToFinishRun(clients []Client) {
 					continue
 				}
 
+				clients[i].xpos = message.Xpos
+				clients[i].animationFrame = message.AnimationFrame
+				clients[i].runTime = message.RunTime
+				clients[i].arrived = message.Arrived
+
+				notifyAllClients(clients, clients[i])
+				
 				if message.Arrived == true {
 					channels[i] <- true
 					break
-				} else {
-					clients[i].xpos = message.Xpos
-					clients[i].animationFrame = message.AnimationFrame
-
-					notifyAllClients(clients, clients[i])
 				}
 			}
 		}(i, client)
