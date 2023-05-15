@@ -96,24 +96,39 @@ func (g *Game) listenServer() {
 				log.Println("Changement du nom à", serverMessage.IdPlayer)
 				g.client.idPlayer = serverMessage.IdPlayer
 				g.runners[0].playerName = serverMessage.IdPlayer
+				g.runners[0].hasBeenAttributed = true
 			}
 		} else {
-			for i := 0; i < len(g.runners); i++ {
-				if !g.runners[i].hasBeenAttributed {
-					log.Println(fmt.Sprintf("Le runner %d a été attribué à %s", i, serverMessage.IdPlayer))
-					g.runners[i].playerName = serverMessage.IdPlayer
-					g.runners[i].hasBeenAttributed = true
+			// Si aucun client n'a été attribué, on attribue le premier client qui se présente
+			if (func() bool {
+				for i := 0; i < len(g.runners); i++ {
+					if g.runners[i].playerName == serverMessage.IdPlayer {
+						return false
+					}
 				}
+				return true
+			}()) {
+				for i := 0; i < len(g.runners); i++ {
+					if !g.runners[i].hasBeenAttributed {
+						log.Println(fmt.Sprintf("Le runner %d a été attribué à %s", i, serverMessage.IdPlayer))
+						g.runners[i].playerName = serverMessage.IdPlayer
+						g.runners[i].hasBeenAttributed = true
 
+						break
+					}
+				}
+			}
+
+			for i := 0; i < len(g.runners); i++ {
 				if g.runners[i].playerName == serverMessage.IdPlayer {
 					g.runners[i].playerName = serverMessage.IdPlayer
 					g.runners[i].xpos = serverMessage.Xpos
-					// g.runners[i].ypos = serverMessage.Ypos
 					g.runners[i].arrived = serverMessage.Arrived
 					g.runners[i].runTime = serverMessage.RunTime
 					g.runners[i].colorScheme = serverMessage.ColorScheme
 					g.runners[i].colorSelected = serverMessage.ColorSelected
 					g.runners[i].animationFrame = serverMessage.AnimationFrame
+					g.runners[i].hasBeenAttributed = true
 
 					break
 				}

@@ -130,20 +130,7 @@ func waitForAllClientsToChooseCharacter(clients []Client) {
 
 				if message.ColorSelected == true {
 					channels[i] <- true
-
-					if (func() bool {
-						for _, ch := range channels {
-							if <-ch == false {
-								return false
-							}
-						}
-
-						return true
-					}()) {
-						log.Println("All clients have chosen their character")
-						break
-					}
-
+					break
 				}
 			}
 		}(i, client)
@@ -219,7 +206,7 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 2 {
+	for len(clients) < 4 {
 		conn, err := listener.Accept()
 
 		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0})
@@ -230,6 +217,10 @@ func main() {
 		}
 
 		notifyClient(&clients[len(clients)-1], buildServerGameMessage(&clients[len(clients)-1], true))
+
+		for _, client := range clients {
+			notifyAllClients(clients, client)
+		}
 	}
 
 	log.Println("Tous les clients sont connectés")
