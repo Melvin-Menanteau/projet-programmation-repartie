@@ -10,9 +10,11 @@ package main
 import (
 	"bytes"
 	"course/assets"
+	"fmt"
 	"image"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,6 +22,7 @@ import (
 
 type Game struct {
 	state            int           // Current state of the game
+	stateLock        sync.Mutex    // Lock for the state
 	runnerImage      *ebiten.Image // Image with all the sprites of the runners
 	runners          [4]Runner     // The four runners used in the game
 	f                Field         // The running field
@@ -27,6 +30,7 @@ type Game struct {
 	resultStep       int           // Current step in StateResult state
 	getTPS           bool          // Help for debug
 	serverConnection *net.Conn
+	client           *Client // Client associated with the runner
 }
 
 // These constants define the five possible states of the game
@@ -38,16 +42,25 @@ const (
 	StateResult                   // Results announcement
 )
 
-// InitGame builds a new game ready for being run by ebiten
-func InitGame(serverConnection *net.Conn) (g Game) {
+// setter synchronisé pour l'état du jeu
+func (g *Game) SetState(state int) {
+	g.stateLock.Lock()         // acquisition du verrou
+	defer g.stateLock.Unlock() // libération du verrou après la fin de la méthode
 
+	g.state = state
+}
+
+// InitGame builds a new game ready for being run by ebiten
+func InitGame(serverConnection *net.Conn) *Game {
 	if serverConnection == nil {
 		log.Fatal("No server connection")
 	}
 
+	g := &Game{}
+	g.client = NewClient()
 	g.serverConnection = serverConnection
 
-	go g.notifyServer()
+	// go g.notifyServer()
 	go g.listenServer()
 
 	// Open the png image for the runners sprites
@@ -65,16 +78,21 @@ func InitGame(serverConnection *net.Conn) (g Game) {
 	// Create the runners
 	for i := range g.runners {
 		interval := 0
+		hasBeenAttributed := false
 		if i == 0 {
 			interval = frameInterval
+			hasBeenAttributed = true
 		}
 		g.runners[i] = Runner{
 			xpos: start, ypos: 50 + float64(i*20),
-			maxFrameInterval: interval,
-			colorScheme:      0,
-			idRunner:         i,
+			maxFrameInterval:  interval,
+			colorScheme:       0,
+			playerName:        fmt.Sprintf("Player%d", i),
+			hasBeenAttributed: hasBeenAttributed,
 		}
 	}
+
+	g.client.runner = &g.runners[0]
 
 	// Create the field
 	g.f = Field{

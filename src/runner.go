@@ -40,8 +40,8 @@ type Runner struct {
 	colorSelected     bool          // Tells if the color scheme is fixed or not
 	animationStep     int           // Current step of the runner animation
 	animationFrame    int           // Number of frames since the last animation step
-	idRunner          int           // Number of the runner (1 to 4)
-	client            *Client       // Client associated with the runner
+	playerName        string        // Name of the player
+	hasBeenAttributed bool          // Tells if the runner is controlled by an AI or not
 }
 
 // ManualUpdate allows to use the keyboard in order to control a runner
@@ -156,7 +156,7 @@ func (r *Runner) Draw(screen *ebiten.Image) {
 
 // DrawSelection draws the current selection of a runner appearance for the
 // player select screen
-func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
+func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int, playerName string) {
 	xMod := 32
 	if (playerNum/2)%2 == 0 {
 		xMod = -32
@@ -168,5 +168,8 @@ func (r *Runner) DrawSelection(screen *ebiten.Image, xStep, playerNum int) {
 		yMod = -62
 	}
 	yPos := (screenHeight + yMod) / 2
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint("P", playerNum), xPos, yPos)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName), xPos, yPos)
+	if r.colorSelected {
+		ebitenutil.DebugPrintAt(screen, fmt.Sprint(playerName, " ready!"), xPos, yPos)
+	}
 }

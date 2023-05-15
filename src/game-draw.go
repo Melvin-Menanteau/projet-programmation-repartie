@@ -56,7 +56,11 @@ func (g *Game) DrawSelectScreen(screen *ebiten.Image) {
 		screen.DrawImage(g.runnerImage.SubImage(image.Rect(0, i*32, 32, i*32+32)).(*ebiten.Image), options)
 	}
 	for i := range g.runners {
-		g.runners[i].DrawSelection(screen, xStep, i)
+		if i == 0 {
+			g.runners[i].DrawSelection(screen, xStep, i, g.client.runner.playerName)
+		} else {
+			g.runners[i].DrawSelection(screen, xStep, i, g.runners[i].playerName)
+		}
 	}
 }
 

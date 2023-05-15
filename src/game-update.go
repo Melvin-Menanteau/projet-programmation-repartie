@@ -16,8 +16,6 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -27,7 +25,7 @@ import (
 // HandleWelcomeScreen waits for the player to push SPACE in order to
 // start the game
 func (g *Game) HandleWelcomeScreen() bool {
-	return inpututil.IsKeyJustPressed(ebiten.KeySpace)
+	return g.client.globalState == GlobalChooseRunner && inpututil.IsKeyJustPressed(ebiten.KeySpace)
 }
 
 // ChooseRunners loops over all the runners to check which sprite each
@@ -37,11 +35,19 @@ func (g *Game) ChooseRunners() (done bool) {
 	for i := range g.runners {
 		if i == 0 {
 			done = g.runners[i].ManualChoose() && done
+
+			if g.runners[i].colorSelected {
+				g.notifyServer()
+			}
 		} else {
-			done = g.runners[i].RandomChoose() && done
+			if g.runners[i].hasBeenAttributed {
+				done = g.runners[i].colorSelected && done
+			} else {
+				done = g.runners[i].RandomChoose() && done
+			}
 		}
 	}
-	return done
+	return g.client.globalState == GlobalLaunchRun
 }
 
 // HandleLaunchRun countdowns to the start of a run
@@ -63,7 +69,9 @@ func (g *Game) UpdateRunners() {
 		if i == 0 {
 			g.runners[i].ManualUpdate()
 		} else {
-			g.runners[i].RandomUpdate()
+			if !g.runners[i].hasBeenAttributed {
+				g.runners[i].RandomUpdate()
+			}
 		}
 	}
 }
@@ -112,7 +120,6 @@ func (g *Game) HandleResults() bool {
 // Depending of the current state of the game it calls the above utilitary
 // function and then it may update the state of the game
 func (g *Game) Update() error {
-	// g.listenServer()
 	switch g.state {
 	case StateWelcomeScreen:
 		done := g.HandleWelcomeScreen()
@@ -121,7 +128,7 @@ func (g *Game) Update() error {
 		}
 	case StateChooseRunner:
 		done := g.ChooseRunners()
-		if done {
+		if done && g.client.globalState == GlobalLaunchRun {
 			g.UpdateAnimation()
 			g.state++
 		}
@@ -134,7 +141,8 @@ func (g *Game) Update() error {
 		g.UpdateRunners()
 		finished := g.CheckArrival()
 		g.UpdateAnimation()
-		if finished {
+		g.notifyServer()
+		if finished && g.client.globalState == GlobalResult {
 			g.state++
 		}
 	case StateResult:
@@ -145,60 +153,4 @@ func (g *Game) Update() error {
 		}
 	}
 	return nil
-}
-
-type serverMessage struct {
-	State     int
-	Time      int
-	Position  float64
-	Character int
-}
-
-func (g *Game) notifyServer() {
-	jsonData, err := json.Marshal(serverMessage{g.state, 0, 0, 0})
-
-	if err != nil {
-		log.Println("Erreur en encodant les données")
-	}
-
-	_, err = (*g.serverConnection).Write(jsonData)
-
-	if err != nil {
-		log.Println("Erreur en envoyant les données")
-	}
-}
-
-func (g *Game) listenServer() {
-	for {
-		buffer := make([]byte, 1024)
-		n, err := (*g.serverConnection).Read(buffer)
-
-		if n == 0 {
-			continue
-		}
-
-		if err != nil {
-			log.Println("Erreur en lisant les données du server")
-			continue
-		}
-
-		var serverMessage serverMessage
-		err = json.Unmarshal(buffer[:n], &serverMessage)
-
-		if err != nil {
-			// log.Println("Erreur en décodant les données")
-			continue
-		}
-
-		log.Println(g.state, serverMessage.State)
-
-		if g.state != serverMessage.State {
-			log.Println("Changement d'état")
-			g.state = serverMessage.State
-		}
-
-		log.Println(g.state)
-
-		log.Println("Message reçu du serveur: ", serverMessage)
-	}
 }
