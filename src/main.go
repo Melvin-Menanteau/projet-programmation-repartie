@@ -29,29 +29,6 @@ func connectToServer() *net.Conn {
 		return nil
 	}
 
-	// for {
-	// 	buffer := make([]byte, 1024)
-	// 	n, err := conn.Read(buffer)
-
-	// 	if err != nil {
-	// 		log.Println("Erreur en lisant la réponse du serveur:", err)
-	// 		return nil
-	// 	}
-
-	// 	var message serverMessage
-	// 	err = json.Unmarshal(buffer[:n], &message)
-
-	// 	if err != nil {
-	// 		log.Println("Erreur en décodant les données")
-	// 	}
-
-	// 	log.Println("Message reçu du serveur: ", message)
-	// 	log.Println("Message reçu du serveur: ", message.State)
-
-	// 	// Afficher la réponse du serveur
-	// 	log.Println("Réponse du serveur:", string(buffer[:n]))
-	// }
-
 	return &conn
 
 }
@@ -66,7 +43,7 @@ func main() {
 	flag.Parse()
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("LP MiAR -- Programmation répartie (UE03EC2)")
+	ebiten.SetWindowTitle("Rapide et furieux")
 
 	g := InitGame(conn)
 	g.getTPS = getTPS

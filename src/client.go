@@ -25,6 +25,7 @@ type serverGameMessage struct {
 	RunTime        time.Duration
 	ColorScheme    int
 	ColorSelected  bool
+	Speed		   float64
 	AnimationFrame int
 	IsSelf         bool
 	NbPlayersReady int
@@ -134,6 +135,7 @@ func (g *Game) listenServer() {
 					g.runners[i].runTime = serverMessage.RunTime
 					g.runners[i].colorScheme = serverMessage.ColorScheme
 					g.runners[i].colorSelected = serverMessage.ColorSelected
+					g.runners[i].speed = serverMessage.Speed
 					g.runners[i].animationFrame = serverMessage.AnimationFrame
 					g.runners[i].hasBeenAttributed = true
 
@@ -154,6 +156,7 @@ func (g *Game) notifyServer() {
 		g.client.runner.runTime,
 		g.client.runner.colorScheme,
 		g.client.runner.colorSelected,
+		g.client.runner.speed,
 		g.client.runner.animationFrame,
 		true,
 		g.client.nbPlayersReady})

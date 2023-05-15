@@ -27,6 +27,7 @@ type Client struct {
 	runTime        time.Duration
 	colorScheme    int
 	colorSelected  bool
+	speed 		   float64
 	animationFrame int
 	nbPlayersReady int
 }
@@ -40,6 +41,7 @@ type serverGameMessage struct {
 	RunTime        time.Duration
 	ColorScheme    int
 	ColorSelected  bool
+	Speed		   float64
 	AnimationFrame int
 	IsSelf         bool
 	NbPlayersReady int
@@ -101,6 +103,7 @@ func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 		client.runTime,
 		client.colorScheme,
 		client.colorSelected,
+		client.speed,
 		client.animationFrame,
 		isSelf,
 		client.nbPlayersReady}
@@ -212,7 +215,7 @@ func main() {
 	for len(clients) < 2 {
 		conn, err := listener.Accept()
 
-		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0, len(clients)})
+		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0, 0, len(clients)})
 
 		if err != nil {
 			log.Println("accept error:", err)
