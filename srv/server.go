@@ -93,7 +93,7 @@ func notifyAllClients(clients []Client, sourceClient Client) {
 
 func buildServerGameMessage(client *Client, isSelf bool) serverGameMessage {
 	log.Println("[BuildServerGameMessage] Construction du message pour le client ", client)
-
+	
 	return serverGameMessage{
 		client.gameState,
 		client.id,
@@ -212,7 +212,7 @@ func main() {
 	// Fermer le listener quand le programme se termine
 	defer listener.Close()
 
-	for len(clients) < 2 {
+	for len(clients) < 4 {
 		conn, err := listener.Accept()
 
 		clients = append(clients, Client{&conn, fmt.Sprintf("player%d", len(clients)), StateWelcomeScreen, 0, 0, false, 0, 0, false, 0, 0, len(clients)})
